@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>res/qml/main.qml</file>
+        <file>res/qml/common/app_singleton.qml</file>
+        <file>res/qml/common/app_ver_txt.qml</file>
+        <file>res/qml/common/mydebugrect.qml</file>
+        <file>res/qml/common/qmldir</file>
+    </qresource>
+</RCC>

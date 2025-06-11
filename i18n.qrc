@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>res/i18n/flood-it-qml_en.qm</file>
+        <file>res/i18n/flood-it-qml_ru.qm</file>
+        <file>res/i18n/flood-it-qml_ru.ts</file>
+        <file>res/i18n/flood-it-qml_en.ts</file>
+    </qresource>
+</RCC>

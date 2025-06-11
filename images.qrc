@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>res/images/icons/ic_bullet.svg</file>
+        <file>res/images/icons/ic_drawer.svg</file>
+        <file>res/images/icons/ic_bar_chart.svg</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>res/fonts/OFL.txt</file>
+        <file>res/fonts/PT-Astra-Serif_Regular.ttf</file>
+    </qresource>
+</RCC>
