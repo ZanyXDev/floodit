@@ -3,6 +3,7 @@
 ## flood-it game for Desktop and Modile (Android and Aurora)
 The object of the game is to flood the whole board with one color in less than 25 steps.
 
+[See also] (https://annimon.com/article/3473)
 ### Install
 
 [<img src="/images/badges/github.png"
