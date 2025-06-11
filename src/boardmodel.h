@@ -24,6 +24,8 @@ public:
     Qt::ItemFlags flags(const QModelIndex &index) const override;
     QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex& index) const override;
+public slots:
+    void clear();
 private:
     QVector<CellItem> m_data;
 };
