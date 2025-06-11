@@ -4,7 +4,7 @@ import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15 as QQC2
 
 import common 1.0
-import io.github.zanyxdev.flood-it-qml.hal 1.0
+import io.github.zanyxdev.flood_it_qml.hal 1.0
 
 QQC2.ApplicationWindow {
   id: appWnd
@@ -109,12 +109,13 @@ QQC2.ApplicationWindow {
         id: toolBarPageTitle
         Layout.fillWidth: true
 
-        text: qsTr("UnRiddle")
+        text: qsTr("Flood-It")
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignHCenter
         font {
           family: AppSingleton.astraFont.name
           pointSize: AppSingleton.smallFontSize
+          bold: true
         }
       }
 

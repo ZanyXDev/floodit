@@ -77,12 +77,12 @@ int main(int argc, char *argv[]) {
         },
         Qt::QueuedConnection);
 
-/**
+    /**
  * @note Register the singleton type provider with QML by calling this function in an initialization function.
  * @sa  @link https://raymii.org/s/articles/Qt_QML_Integrate_Cpp_with_QML_and_why_ContextProperties_are_bad.html
  *
  */
-    qmlRegisterSingletonInstance("io.github.zanyxdev.flood-it-qml.hal", 1, 0,"HAL", m_hal.get());
+    qmlRegisterSingletonInstance("io.github.zanyxdev.flood_it_qml.hal", 1, 0,"HAL", m_hal.get());
     engine.load(url);
 
     return app.exec();
