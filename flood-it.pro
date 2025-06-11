@@ -27,11 +27,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 HEADERS += \
+        src/boardgenerator.h \
         src/boardmodel.h \
         src/cell_item.h \
         src/hal.h 
 
 SOURCES += \
+            src/boardgenerator.cpp \
             src/boardmodel.cpp \
             src/main.cpp \
             src/hal.cpp 
