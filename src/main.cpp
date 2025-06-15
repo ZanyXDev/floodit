@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
     QGuiApplication app(argc, argv);
 
     QTranslator myappTranslator;
-    if (  myappTranslator.load(QLocale(), QLatin1String("flood-it-qml"), QLatin1String("_"), QLatin1String(":/res/i18n")) ){
+    if (  myappTranslator.load(QLocale(), QLatin1String("floodit"), QLatin1String("_"), QLatin1String(":/res/i18n")) ){
         app.installTranslator(&myappTranslator);
     }
 
@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
  * @sa  @link https://raymii.org/s/articles/Qt_QML_Integrate_Cpp_with_QML_and_why_ContextProperties_are_bad.html
  *
  */
-    qmlRegisterSingletonInstance("io.github.zanyxdev.flood_it_qml.hal", 1, 0,"HAL", m_hal.get());
+    qmlRegisterSingletonInstance("io.github.zanyxdev.floodit.hal", 1, 0,"HAL", m_hal.get());
     engine.load(url);
 
     return app.exec();
