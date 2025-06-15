@@ -1,1 +1,1 @@
-io.github.zanyxdev.flood-it-qml
+io.github.zanyxdev.floodit
