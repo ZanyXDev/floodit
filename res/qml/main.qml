@@ -4,7 +4,8 @@ import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15 as QQC2
 
 import common 1.0
-import io.github.zanyxdev.flood_it_qml.hal 1.0
+import io.github.zanyxdev.floodit 1.0
+import io.github.zanyxdev.floodit.hal 1.0
 
 QQC2.ApplicationWindow {
   id: appWnd
@@ -159,6 +160,9 @@ QQC2.ApplicationWindow {
   }
 
   // ----- Qt provided non-visual children
+  DataManager {
+    id: dataManager
+  }
 
   // ----- Custom non-visual children
 
