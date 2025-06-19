@@ -33,14 +33,16 @@ HEADERS += \
         src/boardmodel.h \
         src/cell_item.h \
         src/datamanager.h \
-        src/hal.h 
+        src/hal.h  \
+        src/palette.h
 
 SOURCES += \
             src/boardgenerator.cpp \
             src/boardmodel.cpp \
             src/datamanager.cpp \
             src/main.cpp \
-            src/hal.cpp 
+            src/hal.cpp  \
+            src/palette.cpp
 
 RESOURCES += \
         images.qrc \

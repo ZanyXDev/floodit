@@ -1,0 +1,27 @@
+#pragma once
+
+#include <QObject>
+#include <QStringList>
+
+class Palette : public QObject
+{
+    Q_OBJECT
+public:
+    explicit Palette(QObject *parent = nullptr);
+
+    QString getRandomColor() const;
+    QString getColorFromId(int id) const;
+    const QStringList& colors() const;
+
+    void setMaxColors(int a_maxColors);
+    void setColorMode (bool m_mode);
+
+private:
+    int m_maxColors;
+    bool m_colorMode;
+    QStringList m_lightColors;
+    QStringList m_darkColors;
+    QStringList m_allColors;
+
+    bool isInRange(int value, int min, int max);
+};
