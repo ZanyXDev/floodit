@@ -5,5 +5,7 @@
         <file>res/qml/common/app_ver_txt.qml</file>
         <file>res/qml/common/mydebugrect.qml</file>
         <file>res/qml/common/qmldir</file>
+        <file>res/qml/visual_effects/qmldir</file>
+        <file>res/qml/visual_effects/carusel.qml</file>
     </qresource>
 </RCC>
