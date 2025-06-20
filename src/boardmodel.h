@@ -26,6 +26,7 @@ public:
     QModelIndex parent(const QModelIndex& index) const override;
 public slots:
     void clear();
+    void addCell(const QString &v_color);
 private:
     QVector<CellItem> m_data;
 };

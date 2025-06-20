@@ -27,7 +27,7 @@ void DataManager::startNewGame(int v_boardSize, int v_maxColors, bool v_mode)
         this->setMaxColors( v_maxColors );
         this->setColorMode( v_mode );
         for (int i=0; i< v_boardSize*v_boardSize; ++i){
-            setCellColor( i, m_pallete.getRandomColor());
+            m_boardModel->addCell( m_pallete.getRandomColor());
         }
     }else {
         QString data = tr("Error: Board model not found !!!");
@@ -72,7 +72,7 @@ bool DataManager::getColorMode() const
 
 bool DataManager::setCellColor(int index, const QVariant &value)
 {
-    qDebug() << "index:" <<index <<" value:" <<value;
+   // qDebug() << "index:" <<index <<" value:" <<value;
     return setCellProperty(index,value, m_boardModel->ColorRole);
 }
 

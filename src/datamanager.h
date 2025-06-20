@@ -17,7 +17,7 @@ class DataManager : public QObject
 {
     Q_OBJECT
     QML_ELEMENT
-    Q_PROPERTY(BoardModel* m_boardModel READ boardModel CONSTANT)
+    Q_PROPERTY(BoardModel* boardModel READ boardModel CONSTANT)
     Q_PROPERTY(int maxColors READ getMaxColors WRITE setMaxColors NOTIFY maxColorsChanged)
     Q_PROPERTY(int boardSize READ getBoardSize WRITE setBoardSize NOTIFY boardSizeChanged)
     Q_PROPERTY(bool colorMode READ getColorMode WRITE setColorMode NOTIFY colorModeChanged)

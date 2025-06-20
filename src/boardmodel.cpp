@@ -93,3 +93,15 @@ void BoardModel::clear()
     m_data.clear();
     endResetModel();
 }
+
+void BoardModel::addCell(const QString &v_color)
+{
+    CellItem cellItem;
+    beginInsertRows(QModelIndex(), m_data.size(), m_data.size());
+    cellItem.m_filled= false;
+    cellItem.m_color =v_color;
+    m_data.append(cellItem);
+    endInsertRows();
+}
+
+

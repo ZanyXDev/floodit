@@ -2,6 +2,6 @@
 #include <QColor>
 
 struct CellItem{
-    bool m_filled;
-    QColor m_color;
+    bool m_filled{false};
+    QColor m_color{"#000000"};
 };
