@@ -21,7 +21,7 @@ QQC2.ApplicationWindow {
   property var screenHeight: Screen.height
   property var screenAvailableWidth: Screen.desktopAvailableWidth
   property var screenAvailableHeight: Screen.desktopAvailableHeight
-
+  property int boardSize: 4
   // ----- Signal declarations
   signal screenOrientationUpdated(int screenOrientation)
 
@@ -66,6 +66,9 @@ QQC2.ApplicationWindow {
     if (!isMobile) {
       appWnd.moveToCenter()
     }
+    appWnd.boardSize = 6
+    dataManager.startNewGame(6, 4, false)
+    AppSingleton.toLog(`dataManager.boardModel.rowCount [${dataManager.boardModel.rowCount()}]`)
   }
 
   onAppInForegroundChanged: {
@@ -130,6 +133,12 @@ QQC2.ApplicationWindow {
         visible: isMoreMenuNeed
         icon.source: "qrc:/res/images/icons/ic_bullet.svg"
         //action: optionsMenuAction
+        onClicked: {
+          if (isDebugMode) {
+            appWnd.boardSize = 8
+            dataManager.startNewGame(8, 7, false)
+          }
+        }
       }
     }
   }
@@ -152,7 +161,25 @@ QQC2.ApplicationWindow {
     }
     ProportionalRect {
       id: rect_1
+      Layout.preferredWidth: 320
       Layout.preferredHeight: 320
+      GridLayout {
+        id: boardGrid
+        anchors.fill: parent
+
+        rows: appWnd.boardSize
+        columns: appWnd.boardSize
+        Repeater {
+          model: dataManager.boardModel
+          delegate: Rectangle {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            //Layout.preferredWidth: 320 % appWnd.boardSize
+            //Layout.preferredHeight: 320 % appWnd.boardSize
+            color: model.color
+          }
+        }
+      }
     }
     ProportionalRect {
       id: rect_2
@@ -162,6 +189,11 @@ QQC2.ApplicationWindow {
   // ----- Qt provided non-visual children
   DataManager {
     id: dataManager
+    Component.onCompleted: {
+
+      //AppSingleton.toLog(`dataManager [${dataManager}]`)
+      //AppSingleton.toLog(`dataManager.boardModel.rowCount [${dataManager.boardModel.rowCount()}]`)
+    }
   }
 
   // ----- Custom non-visual children
