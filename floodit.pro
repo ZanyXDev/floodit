@@ -34,12 +34,14 @@ HEADERS += \
         src/cell_item.h \
         src/datamanager.h \
         src/hal.h  \
+        src/imageprovider.h \
         src/palette.h
 
 SOURCES += \
             src/boardgenerator.cpp \
             src/boardmodel.cpp \
             src/datamanager.cpp \
+            src/imageprovider.cpp \
             src/main.cpp \
             src/hal.cpp  \
             src/palette.cpp

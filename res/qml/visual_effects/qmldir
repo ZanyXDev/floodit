@@ -1,3 +1,5 @@
 module visual_effects
 Carusel 1.0 carusel.qml
+GamePreviewModel 1.0 game_pmodel.qml
+DelegateItem 1.0 delegate_item.qml
 

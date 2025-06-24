@@ -20,6 +20,11 @@ const QStringList& Palette::colors() const
     return m_colorMode ? m_darkColors : m_lightColors;
 }
 
+const QStringList& Palette::allColors() const
+{
+    return m_allColors;
+}
+
 QString Palette::getRandomColor() const
 {
     int m_rnd = QRandomGenerator::global()->bounded(m_maxColors);

@@ -4,6 +4,8 @@ import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15 as QQC2
 
 import common 1.0
+import visual_effects 1.0
+
 import io.github.zanyxdev.floodit 1.0
 import io.github.zanyxdev.floodit.hal 1.0
 
@@ -143,6 +145,28 @@ QQC2.ApplicationWindow {
     }
   }
 
+  ListView {
+    id: listView
+    anchors.fill: parent
+    spacing: -60
+    model: picturesModel
+    highlightFollowsCurrentItem: true
+    highlightRangeMode: ListView.StrictlyEnforceRange
+    highlightMoveDuration: 400
+    preferredHighlightBegin: appWnd.height * 0.5 - 140
+    preferredHighlightEnd: appWnd.height * 0.5 - 140
+    cacheBuffer: 4000
+    // delegate: DelegateItem {
+    //   name: model.name
+    // }
+    Component.onCompleted: {
+      AppSingleton.toLog(`picturesModel.count ${picturesModel.count}`)
+      AppSingleton.toLog(`picturesModel.name ${picturesModel.name}`)
+    }
+  }
+
+
+  /**
   ColumnLayout {
     visible: true
     id: mainColumnLayout
@@ -185,17 +209,19 @@ QQC2.ApplicationWindow {
       id: rect_2
     }
   }
-
+*/
   // ----- Qt provided non-visual children
   DataManager {
     id: dataManager
     Component.onCompleted: {
 
-      //AppSingleton.toLog(`dataManager [${dataManager}]`)
       //AppSingleton.toLog(`dataManager.boardModel.rowCount [${dataManager.boardModel.rowCount()}]`)
     }
   }
 
+  GamePreviewModel {
+    id: picturesModel
+  }
   // ----- Custom non-visual children
 
   // ----- JavaScript functions

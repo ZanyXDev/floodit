@@ -12,7 +12,7 @@ public:
     QString getRandomColor() const;
     QString getColorFromId(int id) const;
     const QStringList& colors() const;
-
+    const QStringList& allColors() const;
     void setMaxColors(int a_maxColors);
     void setColorMode (bool m_mode);
 
