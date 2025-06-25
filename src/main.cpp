@@ -16,11 +16,12 @@
 #ifdef QT_DEBUG
 #include <QtCore/QDirIterator>
 #include <QtCore/QLoggingCategory>
-
+#include <QElapsedTimer>
 #endif
 
 #include "hal.h"
 #include "imageprovider.h"
+
 
 int main(int argc, char *argv[]) {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -32,9 +33,9 @@ int main(int argc, char *argv[]) {
     QLocale::setDefault(QLocale::English);
     QLoggingCategory::setFilterRules(QStringLiteral("qt.qml.binding.removal.info=true"));
 #endif
-
+    auto settings = new QSettings(PACKAGE_NAME_STR, ACTIVITY_NAME_STR);
     // Allocate [Hal] before the engine to ensure that it outlives it !!
-    QScopedPointer<Hal> m_hal(new Hal);   
+    QScopedPointer<Hal> m_hal(new Hal(nullptr,settings));
     m_hal->createAppFolder();
 
     QCoreApplication::setOrganizationName(PACKAGE_NAME_STR);
@@ -51,7 +52,15 @@ int main(int argc, char *argv[]) {
     engine.addImportPath("qrc:/res/qml");
     QQmlContext *context = engine.rootContext();
     // Регистрируем провайдера изображений
-    engine.addImageProvider("dynamic", new ImageProvider());
+    auto m_imagePoriver = new ImageProvider();
+#ifdef QT_DEBUG
+    QElapsedTimer timer;
+    timer.start();
+    m_imagePoriver->generate( m_hal->getLightMode() );
+    qDebug() << "Функция выполнилась за" << timer.elapsed() << "миллисекунд";
+#endif
+
+    engine.addImageProvider("dynamic", m_imagePoriver);
 #ifdef Q_OS_ANDROID    
     QtAndroid::hideSplashScreen();
 #endif

@@ -7,7 +7,7 @@
 ImageProvider::ImageProvider()
     : QQuickImageProvider(QQuickImageProvider::Image)
 {
-    generate();
+
 }
 
 ImageProvider::~ImageProvider()
@@ -22,24 +22,11 @@ QImage ImageProvider::requestImage(const QString &id, QSize *size, const QSize &
     QImage image(width, height, QImage::Format_ARGB32);
     image.fill(Qt::white);
 
-    for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
-            int r = x % 255;
-            int g = y % 255;
-            int b = (x + y) % 255;
-            image.setPixelColor(x, y, QColor(r, g, b));
-        }
-    }
-
-    if (size)
-        *size = image.size();
-
     return image;
 }
 
-void ImageProvider::generate()
-{
-    /// Move to DataManager
+void ImageProvider::generate( bool lightMode)
+{   
     m_pic.clear();
     m_nmap.clear();
     Palette *m_pallete = new Palette();
@@ -48,10 +35,20 @@ void ImageProvider::generate()
     // c = color range 3,5,7 start with zero
     for (int i=8;i<24; i+=4){
         for (int c=3;c<8;c+=2){
-            m_pic.append(createImage(m_pallete,true,i,c));
-            m_pic.append(createImage(m_pallete,false,i,c));
+            m_pic.append(createImage(m_pallete,lightMode,i,c));
         }
     }
+    for (auto &it:m_pic){
+        m_nmap.append( generateNormalMap( it ));
+    }
+
+#ifdef QT_DEBUG
+    int i=0;
+    for (auto &it:m_nmap){
+        it.save(QString("normal_mapx%1.png").arg(i), "PNG");
+        i++;
+    }
+#endif
 
     m_pallete->deleteLater();
 }
@@ -60,12 +57,11 @@ QImage ImageProvider::createImage(Palette *m_pallete, bool v_mode, int v_cellInR
 {
     QStringList m_colors;
     QVector<QPixmap> coloredSquares;  // use array in the color squares
-    QVector<QPixmap> normalMapSquares;
     QPainter painter;
-    QColor pixelColor;
+
     int imgSize = 200;
     int cellSize = imgSize / v_cellInRow;
-    int borderSize =2;
+    int borderSize = 1;
 
     m_pallete->setColorMode(v_mode);
     m_pallete->setMaxColors(v_colors);
@@ -80,21 +76,6 @@ QImage ImageProvider::createImage(Palette *m_pallete, bool v_mode, int v_cellInR
         painter.fillRect(borderSize,borderSize, cellSize-(2*borderSize), cellSize-(2*borderSize), tmp_color);
         painter.end();
         coloredSquares.append(pixmap);
-
-        // Рисуем карту нормалей для блока
-        QPixmap pixmapNormal(cellSize, cellSize);
-        pixmapNormal.fill(QColor(128,128,200)); // # По умолчанию (плоская поверхность)
-        pixelColor.setRgb(50,50,200); // / Границы  - углубление
-        QPen pen;
-        pen.setWidth(borderSize);
-        pen.setColor(pixelColor);
-
-        painter.begin(&pixmapNormal);
-        painter.setPen(pen);
-        painter.drawRect(0,0, cellSize, cellSize);
-        painter.fillRect(borderSize,borderSize, (2*borderSize), cellSize-(2*borderSize), normalToColor(hexColorToNormal(tmp_color)));
-        painter.end();
-        normalMapSquares.append(pixmapNormal);
     }
 
     // draw game board
@@ -102,56 +83,76 @@ QImage ImageProvider::createImage(Palette *m_pallete, bool v_mode, int v_cellInR
     image.fill(Qt::transparent); // прозрачный фон
     painter.begin(&image);
 
-    // create normal map
-    QImage normalMap(cellSize *v_cellInRow, cellSize*v_cellInRow, QImage::Format_ARGB32);
-    normalMap.fill(QColor(128,128,200)); // # По умолчанию (плоская поверхность)
-    QPainter painterNormal;
-    painterNormal.begin(&normalMap);
-
     for (int i=0;i<v_cellInRow;++i){
         for (int j=0;j<v_cellInRow;++j){
             int index = QRandomGenerator::global()->bounded(v_colors);
             painter.drawPixmap(i * cellSize, j * cellSize, coloredSquares[index]);
-            painterNormal.drawPixmap(i * cellSize, j * cellSize, normalMapSquares[index]);
         }
     }
     painter.end();
-    painterNormal.end();
-
 #ifdef QT_DEBUG
     image.save(QString("%1x%1x%2x%3.png").arg(v_cellInRow).arg(v_colors).arg(v_mode), "PNG");
-    normalMap.save(QString("%1x%1x%2x%3_nmap.png").arg(v_cellInRow).arg(v_colors).arg(v_mode), "PNG");
-
-     for (int i=0;i<normalMapSquares.count();++i){
-        normalMapSquares.at(i).save(QString("normal_map_%1_%2.png").arg(v_cellInRow).arg(i), "PNG");
-    }
 #endif
-    m_nmap.append(normalMap);
     return image;
 }
 
-QVector3D ImageProvider::hexColorToNormal(const QColor &color)
+
+QImage ImageProvider::generateNormalMap(const QImage &img)
 {
-    auto r = color.redF() / 255.0f;
-    auto g = color.greenF() / 255.0f;
-    auto b = color.blueF() / 255.0f;
-    // Переводим в диапазон [-1, 1]
-    QVector3D normal(
-        (r - 0.5f) * 2.0f,
-        (g - 0.5f) * 2.0f,
-        (b - 0.5f) * 2.0f
-        );
-    // Нормализуем вектор
-    normal.normalize();
-    return normal;
+    // Преобразование img в яркость
+    // Convert to a different format, for example, Format_Grayscale8
+    QImage grayscale = img.convertToFormat(QImage::Format_Grayscale8);
+    if (grayscale.isNull()) return QImage();
+
+    int w = grayscale.width();
+    int h = grayscale.height();
+    QImage normalMap(w, h, QImage::Format_RGB32);
+
+    // Простые ядра Собеля
+    int sobelX[3][3] = {
+        { -1, 0, 1 },
+        { -2, 0, 2 },
+        { -1, 0, 1 }
+    };
+    int sobelY[3][3] = {
+        { -1, -2, -1 },
+        {  0,  0,  0 },
+        {  1,  2,  1 }
+    };
+
+    for (int y = 1; y < h - 1; ++y) {
+        for (int x = 1; x < w - 1; ++x) {
+            float gx = 0, gy = 0;
+
+            // Применить ядра
+            for (int j = -1; j <= 1; ++j) {
+                for (int i = -1; i <= 1; ++i) {
+                    int val = qGray(grayscale.pixel(x + i, y + j));
+                    gx += val * sobelX[j + 1][i + 1];
+                    gy += val * sobelY[j + 1][i + 1];
+                }
+            }
+
+            // Вычислить нормаль
+            float nx = -gx / 255.0f;
+            float ny = -gy / 255.0f;
+            float nz = 1.0f;
+
+            // Нормализовать вектор
+            float length = std::sqrt(nx * nx + ny * ny + nz * nz);
+            nx /= length;
+            ny /= length;
+            nz /= length;
+            // Перевести [-1,1] в [0,255]
+            int r = static_cast<int>((nx * 0.5f + 0.5f) * 255);
+            int g = static_cast<int>((ny * 0.5f + 0.5f) * 255);
+            int b = static_cast<int>((nz * 0.5f + 0.5f) * 255);
+
+            normalMap.setPixel(x, y, qRgb(r, g, b));
+        }
+    }
+    return normalMap;
 }
 
-QColor ImageProvider::normalToColor(const QVector3D &normal)
-{
-    // Переводим из [-1, 1] в [0, 255]
-    int r = static_cast<int>((normal.x() + 1.0f) * 127.5f);
-    int g = static_cast<int>((normal.y() + 1.0f) * 127.5f);
-    int b = static_cast<int>((normal.z() + 1.0f) * 127.5f);
-    return QColor(r, g, b);
-}
+
 
