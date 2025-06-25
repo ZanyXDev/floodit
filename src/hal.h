@@ -15,10 +15,6 @@
 class Hal : public QObject
 {
     Q_OBJECT
-    // Property indicating if the internal storage read / write permission has been granted
-    Q_PROPERTY (bool externalStorageAccessGranted
-                   READ externalStorageAccessGranted
-                       NOTIFY externalStorageAccessGrantedChanged)
 
     Q_PROPERTY(double devicePixelRatio
                    READ getDevicePixelRatio
@@ -32,7 +28,6 @@ public:
     double getDevicePixelRatio() const;
     bool getDebugMode() const;
     bool isRunOnMobile() const;
-    bool externalStorageAccessGranted() const ;
 
     void setDebugMode(bool newDebugmode);
     void setDotsPerInch(qreal m_dpi);
@@ -46,16 +41,14 @@ public slots:
 signals:
     void upTimeChanged();
     void devicePixelRatioChanged();
-    void externalStorageAccessGrantedChanged();
     void appBuildInfoChanged();
 
 private:
     double m_dpr; // DevicePixelRatio
     qreal m_physicalDotsPerInch;
-    qreal m_devicePixelRatio;   
+    qreal m_devicePixelRatio;
+
     bool m_debugMode;
-    bool m_externalStorageAccessGranted;
-    bool m_runMobile;
     QString m_appBuildInfo;
 };
 

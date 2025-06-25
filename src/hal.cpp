@@ -6,8 +6,7 @@ Hal::Hal(QObject *parent)
     , m_physicalDotsPerInch(0)
     , m_devicePixelRatio(0)
     , m_debugMode(false)
-    , m_externalStorageAccessGranted(false)
-    , m_runMobile(false)
+    , m_runMobile(false)     
     , m_appBuildInfo(QString())
 {
 #ifdef QT_DEBUG
@@ -15,16 +14,12 @@ Hal::Hal(QObject *parent)
 #endif
 
 #ifdef Q_OS_ANDROID
-    m_externalStorageAccessGranted = true;
     m_runMobile = true;
 #endif
     m_appBuildInfo= QString(tr("This program uses Qt version %1.")).arg(QT_VERSION_STR);
 }
 
-
-void Hal::updateInfo(){
-
-}
+void Hal::updateInfo(){}
 
 double Hal::getDevicePixelRatio() const{
     int density = 0;
@@ -63,20 +58,9 @@ double Hal::getDevicePixelRatio() const{
                density >= 240 ? 1.5 : 1;
 }
 
-bool Hal::getDebugMode() const
-{
-    return m_debugMode;
-}
+bool Hal::getDebugMode() const { return m_debugMode; }
 
-bool Hal::isRunOnMobile() const
-{
-    return m_runMobile;
-}
-
-bool Hal::externalStorageAccessGranted() const
-{
-    return m_externalStorageAccessGranted;
-}
+bool Hal::isRunOnMobile() const {return m_runMobile; }
 
 void Hal::setDebugMode(bool newDebugmode){
     if (m_debugMode == newDebugmode){
