@@ -29,28 +29,35 @@ void ImageProvider::generate( bool lightMode)
 {   
     m_pic.clear();
     m_nmap.clear();
-    Palette *m_pallete = new Palette();
+
+    // Создание новой палитры
+    m_pallete = std::make_unique<Palette>();
 
     // i = cell size 8,12,16,20
     // c = color range 3,5,7 start with zero
-    for (int i=8;i<24; i+=4){
-        for (int c=3;c<8;c+=2){
-            m_pic.append(createImage(m_pallete,lightMode,i,c));
+    for (int cellSize=8;cellSize<24; cellSize+=4){
+        for (int colors=3;colors<8;colors+=2){
+            QImage image = createImage(m_pallete.get(), lightMode, cellSize, colors);
+            if (!image.isNull()) {
+                m_pic.append(image);
+            }
         }
     }
-    for (auto &it:m_pic){
-        m_nmap.append( generateNormalMap( it ));
+    // Генерация нормальных карт
+    for (const auto& img : m_pic) {
+        QImage normalMap = generateNormalMap(img);
+        if (!normalMap.isNull()) {
+            m_nmap.append(normalMap);
+        }
     }
 
 #ifdef QT_DEBUG
-    int i=0;
-    for (auto &it:m_nmap){
-        it.save(QString("normal_mapx%1.png").arg(i), "PNG");
-        i++;
+    int index = 0;
+    for (const auto& map : m_nmap) {
+        QString filename = QStringLiteral("normal_map_%1.png").arg(index++);
+        map.save(filename);
     }
 #endif
-
-    m_pallete->deleteLater();
 }
 
 QImage ImageProvider::createImage(Palette *m_pallete, bool v_mode, int v_cellInRow, int v_colors)
