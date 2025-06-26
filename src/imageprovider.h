@@ -1,10 +1,10 @@
 #pragma once
 
-#include "palette.h"
 #include <QQuickImageProvider>
 
 class ImageProvider : public QQuickImageProvider
 {
+
 public:
 
     ImageProvider();
@@ -14,9 +14,13 @@ public:
     void generate( bool lightMode );
 
 private:
-    std::unique_ptr<Palette> m_pallete;
-    QVector<QImage> m_pic;
-    QVector<QImage> m_nmap;
-    QImage createImage(Palette *m_pallete,bool v_mode, int v_cellInRow, int v_colors);
-    QImage createNormalMap(const QImage& img);
+
+    QVector<QImage *> m_pic;
+    QVector<QImage *> m_nmap;
+    int m_bordersize;
+    int m_width;
+    int m_height;
+
+    void createGameBoardImage(const QPair<int, int>& params, bool lightmode, QImage *destImage);
+    void createNormalMapImage(const QImage *srcImage,QImage *destImage);
 };
