@@ -1,7 +1,9 @@
 #include <QPainter>
 #include <QColor>
 #include <QRandomGenerator>
-
+#include <QtConcurrent>
+#include <QFuture>
+#include <QImage>
 #include "imageprovider.h"
 
 ImageProvider::ImageProvider()
@@ -33,32 +35,23 @@ void ImageProvider::generate( bool lightMode)
     // Создание новой палитры
     m_pallete = std::make_unique<Palette>();
 
-    // i = cell size 8,12,16,20
-    // c = color range 3,5,7 start with zero
-    for (int cellSize=8;cellSize<24; cellSize+=4){
-        for (int colors=3;colors<8;colors+=2){
-            QImage image = createImage(m_pallete.get(), lightMode, cellSize, colors);
-            if (!image.isNull()) {
-                m_pic.append(image);
-            }
-        }
-    }
-    // Генерация нормальных карт
-    for (const auto& img : m_pic) {
-        QImage normalMap = generateNormalMap(img);
-        if (!normalMap.isNull()) {
+    // Сначала собираем все параметры для задач
+    QVector<QPair<int, int>> tasks;
+    for (int cellSize = 8; cellSize <= 20; cellSize += 4) {
+        for (int colors = 3; colors <= 7; colors += 2) {
+            tasks.append(qMakePair(cellSize, colors));
+            QImage img = createImage(m_pallete.get(), lightMode, cellSize, colors);
+            QImage normalMap = createNormalMap(img);
+            m_pic.append(img);
             m_nmap.append(normalMap);
+#ifdef QT_DEBUG
+            QString fileName= QString("%1x%1_%2_%3").arg(cellSize).arg(colors).arg(lightMode);
+            img.save(fileName, "PNG");
+            normalMap.save(fileName+"_nmap", "PNG");
+#endif
         }
     }
-
-#ifdef QT_DEBUG
-    int index = 0;
-    for (const auto& map : m_nmap) {
-        QString filename = QStringLiteral("normal_map_%1.png").arg(index++);
-        map.save(filename);
-    }
-#endif
-}
+ }
 
 QImage ImageProvider::createImage(Palette *m_pallete, bool v_mode, int v_cellInRow, int v_colors)
 {
@@ -97,14 +90,12 @@ QImage ImageProvider::createImage(Palette *m_pallete, bool v_mode, int v_cellInR
         }
     }
     painter.end();
-#ifdef QT_DEBUG
-    image.save(QString("%1x%1x%2x%3.png").arg(v_cellInRow).arg(v_colors).arg(v_mode), "PNG");
-#endif
+
     return image;
 }
 
 
-QImage ImageProvider::generateNormalMap(const QImage &img)
+QImage ImageProvider::createNormalMap(const QImage &img)
 {
     // Преобразование img в яркость
     // Convert to a different format, for example, Format_Grayscale8

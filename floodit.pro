@@ -3,7 +3,7 @@
 TEMPLATE +=app
 TARGET = FloodIt
 
-QT       += core qml quick quickcontrols2 multimedia svg
+QT       += core qml quick quickcontrols2 multimedia svg concurrent
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 CONFIG += bump_version

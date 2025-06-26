@@ -18,5 +18,5 @@ private:
     QVector<QImage> m_pic;
     QVector<QImage> m_nmap;
     QImage createImage(Palette *m_pallete,bool v_mode, int v_cellInRow, int v_colors);
-    QImage generateNormalMap(const QImage& img);
+    QImage createNormalMap(const QImage& img);
 };
