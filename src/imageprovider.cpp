@@ -101,14 +101,13 @@ void ImageProvider::createGameBoardImage(const QPair<int, int>& params, bool lig
     // Создание новой палитры
     auto m_pallete = std::make_unique<Palette>();
     m_pallete->setMaxColors(params.second);
-    m_pallete->setColorMode(lightmode);
+    m_pallete->setLightMode(lightmode);
 
     QStringList colors =m_pallete->colors();
     QVector<QPixmap> coloredSquares;  // use array in the color
 
     QPainter painter;
     int cellSize = destImage->height() / params.first;
-    qDebug()  << "cellSize:" <<cellSize <<" params.first:" <<params.first <<" cellSize * params.first:" << (cellSize * params.first);
     for (const auto& color : colors) {
         QPixmap pixmap(cellSize, cellSize);
         pixmap.fill(Qt::transparent); // прозрачный фон

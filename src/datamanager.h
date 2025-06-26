@@ -20,7 +20,11 @@ class DataManager : public QObject
     Q_PROPERTY(BoardModel* boardModel READ boardModel CONSTANT)
     Q_PROPERTY(int maxColors READ getMaxColors WRITE setMaxColors NOTIFY maxColorsChanged)
     Q_PROPERTY(int boardSize READ getBoardSize WRITE setBoardSize NOTIFY boardSizeChanged)
-    Q_PROPERTY(bool colorMode READ getColorMode WRITE setColorMode NOTIFY colorModeChanged)
+    // Property read/write ligth mode  (dark/ligth) value save to Settings
+    Q_PROPERTY (bool lightMode
+                   READ getLightMode
+                       WRITE setLightMode
+                           NOTIFY lightModeChanged)
 public:
     explicit DataManager(QObject *parent = nullptr);
     ~DataManager();
@@ -29,20 +33,21 @@ public:
 
     Q_INVOKABLE void startNewGame(int v_boardSize, int v_maxColors, bool v_mode);
 
+    int  getBoardSize() const;
     void setBoardSize(int v_boardSize);
-    void setMaxColors(int v_maxColors);
-    void setColorMode(bool v_mode);
 
     int  getMaxColors() const;
-    int  getBoardSize() const;
-    bool getColorMode() const;
+    void setMaxColors(int v_maxColors);
+
+    bool getLightMode() const;
+    void setLightMode(bool lightMode);
 
     bool setCellColor(int index, const QVariant &value);
 signals:
     void dataChanged();
     void maxColorsChanged();
     void boardSizeChanged();
-    void colorModeChanged();
+    void lightModeChanged();
     void errorInfo(const QString &info);
 
 private:
@@ -51,6 +56,7 @@ private:
 
     int m_maxColors;
     int m_boardSize;
-    bool m_colorMode;
+    bool m_lightMode;
+
     bool setCellProperty(int index, const QVariant &value, int role);
 };

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QQuickImageProvider>
+#include <QPair>
 
 class ImageProvider : public QQuickImageProvider
 {

@@ -33,9 +33,9 @@ int main(int argc, char *argv[]) {
     QLocale::setDefault(QLocale::English);
     QLoggingCategory::setFilterRules(QStringLiteral("qt.qml.binding.removal.info=true"));
 #endif
-    auto settings = new QSettings(PACKAGE_NAME_STR, ACTIVITY_NAME_STR);
+
     // Allocate [Hal] before the engine to ensure that it outlives it !!
-    QScopedPointer<Hal> m_hal(new Hal(nullptr,settings));
+    QScopedPointer<Hal> m_hal(new Hal(nullptr));
     m_hal->createAppFolder();
 
     QCoreApplication::setOrganizationName(PACKAGE_NAME_STR);
@@ -56,11 +56,11 @@ int main(int argc, char *argv[]) {
 #ifdef QT_DEBUG
     QElapsedTimer timer;
     timer.start();
-    m_imagePoriver->generate( m_hal->getLightMode() );
+    m_imagePoriver->generate();
     qDebug() << "Функция выполнилась за" << timer.elapsed() << "миллисекунд";
 #endif
 
-    engine.addImageProvider("dynamic", m_imagePoriver);
+    engine.addImageProvider("dynamic_image", m_imagePoriver);
 #ifdef Q_OS_ANDROID    
     QtAndroid::hideSplashScreen();
 #endif

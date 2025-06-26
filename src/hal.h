@@ -3,7 +3,6 @@
 #include <QObject>
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
-#include <QSettings>
 
 #ifdef QT_DEBUG
 #include <QDebug>
@@ -20,11 +19,7 @@ class Hal : public QObject
 {
     Q_OBJECT
 
-    // Property read/write ligth mode  (dark/ligth) value save to Settings
-    Q_PROPERTY (bool lightMode
-                   READ getLightMode
-                       WRITE setLightMode
-                           NOTIFY lightModeChanged)
+
     Q_PROPERTY(double devicePixelRatio
                    READ getDevicePixelRatio
                        NOTIFY devicePixelRatioChanged);
@@ -32,7 +27,7 @@ class Hal : public QObject
                    NOTIFY appBuildInfoChanged);
 
 public:
-    explicit Hal(QObject *parent = nullptr, QSettings *settings = nullptr);
+    explicit Hal(QObject *parent = nullptr);
 
     double getDevicePixelRatio() const;
     bool getDebugMode() const;
@@ -43,8 +38,7 @@ public:
     void setDevicePixelRatio(qreal m_dpr);
     void createAppFolder();
 
-    bool getLightMode() const;
-    void setLightMode(bool newLightMode);
+
 public slots:
     void updateInfo();
     QString getAppBuildInfo();
@@ -53,7 +47,6 @@ signals:
     void upTimeChanged();
     void devicePixelRatioChanged();
     void appBuildInfoChanged();
-    void lightModeChanged();
 
 private:
     double m_dpr; // DevicePixelRatio
@@ -62,9 +55,7 @@ private:
 
     bool m_debugMode;
     bool m_runMobile;    
-    bool m_lightMode;
 
     QString m_appBuildInfo;
-    QSettings *m_settings;
 };
 

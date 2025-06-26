@@ -5,7 +5,7 @@
 Palette::Palette(QObject *parent)
     : QObject{parent}
     , m_maxColors (4)
-    , m_colorMode (false)
+    , m_lightMode (false)
 {
     m_allColors << "#eb0000" << "#ffa305" << "#003beb" << "#00eb3b" << "#00e6e6" << "#8005ab" << "#f4f512" << "#eb00b0"
                 << "#b30000" << "#b37d20" << "#1842bf" << "#00b32d" << "#00b3b3" << "#6f0096" << "#b4b523" << "#b30086";
@@ -17,7 +17,7 @@ Palette::Palette(QObject *parent)
 
 const QStringList& Palette::colors() const
 {
-    return m_colorMode ? m_darkColors : m_lightColors;
+    return m_lightMode ? m_darkColors : m_lightColors;
 }
 
 const QStringList& Palette::allColors() const
@@ -28,7 +28,7 @@ const QStringList& Palette::allColors() const
 QString Palette::getRandomColor() const
 {
     int m_rnd = QRandomGenerator::global()->bounded(m_maxColors);
-    if (m_colorMode == true && !m_darkColors.isEmpty()) {
+    if (m_lightMode == true && !m_darkColors.isEmpty()) {
         return m_darkColors[m_rnd];
     } else if (!m_lightColors.isEmpty()) {
         return m_lightColors[m_rnd];
@@ -44,7 +44,7 @@ QString Palette::getColorFromId(int id) const
 
     int m_idx = id % m_maxColors;
 
-    if (m_colorMode && !m_darkColors.isEmpty()) {
+    if (m_lightMode && !m_darkColors.isEmpty()) {
         return m_darkColors[m_idx];
     } else if (!m_lightColors.isEmpty()) {
         return m_lightColors[m_idx];
@@ -81,9 +81,9 @@ void Palette::setMaxColors(int a_maxColors)
     }
 }
 
-void Palette::setColorMode(bool m_mode)
+void Palette::setLightMode(bool lightMode)
 {
-    m_colorMode = m_mode;
+    m_lightMode = lightMode;
 }
 
 

@@ -14,11 +14,11 @@ public:
     const QStringList& colors() const;
     const QStringList& allColors() const;
     void setMaxColors(int a_maxColors);
-    void setColorMode (bool m_mode);
+    void setLightMode (bool lightMode);
 
 private:
     int m_maxColors;
-    bool m_colorMode;
+    bool m_lightMode;
     QStringList m_lightColors;
     QStringList m_darkColors;
     QStringList m_allColors;

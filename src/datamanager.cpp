@@ -5,7 +5,7 @@ DataManager::DataManager(QObject *parent)
     , m_boardModel(new BoardModel(this))
     , m_maxColors (4) // 4 uniq colors
     , m_boardSize (8) // board 8x8 cells
-    , m_colorMode (false) // use light mode
+    , m_lightMode(false)
 {
     if (m_boardModel){
         QObject::connect(m_boardModel,&BoardModel::dataChanged,this,&DataManager::dataChanged);
@@ -19,13 +19,13 @@ DataManager::~DataManager()
     }
 }
 
-void DataManager::startNewGame(int v_boardSize, int v_maxColors, bool v_mode)
+void DataManager::startNewGame(int v_boardSize, int v_maxColors, bool lightMode)
 {
     if (m_boardModel){
         m_boardModel->clear();
         this->setBoardSize( v_boardSize );
         this->setMaxColors( v_maxColors );
-        this->setColorMode( v_mode );
+        this->setLightMode( lightMode );
         for (int i=0; i< v_boardSize*v_boardSize; ++i){
             m_boardModel->addCell( m_pallete.getRandomColor());
         }
@@ -48,11 +48,11 @@ void DataManager::setMaxColors(int v_maxColors)
     emit maxColorsChanged();
 }
 
-void DataManager::setColorMode(bool v_mode)
+void DataManager::setLightMode(bool lightMode)
 {
-    m_colorMode = v_mode;
-    m_pallete.setColorMode( v_mode );
-    emit colorModeChanged();
+    m_lightMode = lightMode;
+    m_pallete.setLightMode( lightMode );
+    emit lightModeChanged();
 }
 
 int DataManager::getBoardSize() const
@@ -65,14 +65,14 @@ int DataManager::getMaxColors() const
     return m_maxColors;
 }
 
-bool DataManager::getColorMode() const
+bool DataManager::getLightMode() const
 {
-    return m_colorMode;
+    return m_lightMode;
 }
 
 bool DataManager::setCellColor(int index, const QVariant &value)
 {
-   // qDebug() << "index:" <<index <<" value:" <<value;
+    // qDebug() << "index:" <<index <<" value:" <<value;
     return setCellProperty(index,value, m_boardModel->ColorRole);
 }
 

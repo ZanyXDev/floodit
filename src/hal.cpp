@@ -1,13 +1,12 @@
 #include "hal.h"
 
-Hal::Hal(QObject *parent, QSettings *settings)
+Hal::Hal(QObject *parent)
     : QObject{parent}
     , m_dpr(1)
     , m_physicalDotsPerInch(0)
     , m_devicePixelRatio(0)
     , m_debugMode(false)
     , m_runMobile(false)     
-    , m_lightMode(false)
     , m_appBuildInfo(QString())
 {
 #ifdef QT_DEBUG
@@ -18,11 +17,6 @@ Hal::Hal(QObject *parent, QSettings *settings)
     m_runMobile = true;
 #endif
     m_appBuildInfo= QString(tr("This program uses Qt version %1.")).arg(QT_VERSION_STR);
-    if (settings !=nullptr){
-        m_settings = settings;
-        // Read settings
-        m_lightMode = m_settings->value("lightMode", "false").toBool();
-    }
 }
 
 void Hal::updateInfo(){}
@@ -113,21 +107,5 @@ void Hal::createAppFolder(){
 
 QString Hal::getAppBuildInfo() {
     return m_appBuildInfo;
-}
-
-bool Hal::getLightMode() const
-{
-    return m_lightMode;
-}
-
-void Hal::setLightMode(bool newLightMode)
-{
-    if (m_lightMode == newLightMode)
-        return;
-    if (m_settings !=nullptr){
-        m_settings->setValue("lightMode", false);
-    }
-    m_lightMode = newLightMode;
-    emit lightModeChanged();
 }
 
