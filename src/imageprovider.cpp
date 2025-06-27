@@ -23,13 +23,38 @@ ImageProvider::~ImageProvider()
 
 QImage ImageProvider::requestImage(const QString &id, QSize *size, const QSize &requestedSize)
 {
-    int width = 200;
-    int height = 200;
+    // Разделяем строку "false/true/20x20x4" по символу '/'
+    QStringList parts = id.split('/');
+    QString booleanLightPart = parts[0];  // "false"
+    QString booleanTypePart = parts[1];  // " true"
+    QString numbersPart = parts[2];  // "12x12x4"
 
-    QImage image(width, height, QImage::Format_ARGB32);
-    image.fill(Qt::white);
+    // Преобразуем первую часть в bool
 
-    return image;
+    bool isPicture = (booleanTypePart == "true");  // безопасный способ преобразования
+
+    QString findKey = QString("%1/%2").arg(booleanLightPart).arg(numbersPart);
+    QImage res_image;
+    if (isPicture){
+        auto pic_it = std::find_if(m_picturesArray.begin(), m_picturesArray.end(),
+                                   [&findKey](const QPair<QString, QImage*>& pair) {
+                                       qDebug()<< "findKey:"<<findKey<< " pair.first:"<<pair.first;
+                                       return pair.first == findKey;
+                                   });
+        if (pic_it != m_picturesArray.end()){
+            res_image = *pic_it->second;
+        }
+    }else{
+        auto norm_it = std::find_if(m_normalMapsArray.begin(), m_normalMapsArray.end(),
+                                    [&findKey](const QPair<QString, QImage*>& pair) {
+                                        return pair.first == findKey;
+                                    });
+        if (norm_it != m_normalMapsArray.end()){
+            res_image = *norm_it->second;
+        }
+    }
+
+    return res_image;
 }
 
 void ImageProvider::generate( bool lightMode )
