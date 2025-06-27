@@ -156,12 +156,11 @@ QQC2.ApplicationWindow {
     preferredHighlightBegin: appWnd.height * 0.5 - 140
     preferredHighlightEnd: appWnd.height * 0.5 - 140
     cacheBuffer: 4000
-    // delegate: DelegateItem {
-    //   name: model.name
-    // }
+    delegate: Image {
+      source: "image://dynamic_image/" + dataManager.lightMode + "/true/" + model.image
+    }
     Component.onCompleted: {
       AppSingleton.toLog(`picturesModel.count ${picturesModel.count}`)
-      AppSingleton.toLog(`picturesModel.name ${picturesModel.name}`)
     }
   }
 
