@@ -12,12 +12,12 @@ public:
     ~ImageProvider();
     QImage requestImage(const QString &id, QSize *size, const QSize &requestedSize) override;
 public:
-    void generate( bool lightMode );
+    void generate();
 
 private:
+    QVector<QPair<QString, QImage *>> m_picturesArray;
+    QVector<QPair<QString, QImage *>> m_normalMapsArray;
 
-    QVector<QImage *> m_pic;
-    QVector<QImage *> m_nmap;
     int m_bordersize;
     int m_width;
     int m_height;

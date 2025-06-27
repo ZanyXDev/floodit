@@ -57,19 +57,26 @@ QImage ImageProvider::requestImage(const QString &id, QSize *size, const QSize &
     return res_image;
 }
 
-void ImageProvider::generate( bool lightMode )
+void ImageProvider::generate()
 {
-    m_pic.clear();
-    m_nmap.clear();
+    m_picturesArray.clear();
+    m_normalMapsArray.clear();
+
     /// TODO set min and max boarsize from DataManager!!!
     // Сначала собираем все параметры для задач
     QVector<QPair<int, int>> tasks;
     for (int cells = 8; cells <= 24; cells += 4) {
-        for (int colors = 3; colors <= 7; colors += 2) {
+        for (int colors = 4; colors <= 8; colors += 2) {
             tasks.append(qMakePair(cells, colors));
             int m_size = cells * (m_height / cells );
-            m_pic.append( new QImage(m_size,m_size,QImage::Format_ARGB32));
-            m_nmap.append( new QImage(m_size,m_size,QImage::Format_ARGB32));
+            // "false/20x20x4" ->"[lightmode]/[picType]/[cells x cells x colors]"
+            QString desc = QString("%1/%2x%2x%3");
+
+            m_picturesArray.append(qMakePair(desc.arg("true").arg(cells).arg(colors), new QImage(m_size,m_size,QImage::Format_ARGB32)));
+            m_normalMapsArray.append(qMakePair(desc.arg("true").arg(cells).arg(colors), new QImage(m_size,m_size,QImage::Format_ARGB32)));
+
+            m_picturesArray.append(qMakePair(desc.arg("false").arg(cells).arg(colors), new QImage(m_size,m_size,QImage::Format_ARGB32)));
+            m_normalMapsArray.append(qMakePair(desc.arg("false").arg(cells).arg(colors), new QImage(m_size,m_size,QImage::Format_ARGB32)));
         }
     }
 
@@ -78,10 +85,12 @@ void ImageProvider::generate( bool lightMode )
     // Запускаем задачи в параллельных потоках
     for (int i = 0; i < tasks.size(); ++i) {
         QPair<int, int> params = tasks[i];
-        QImage* destImage = m_pic[i];
+        QPair<QString, QImage *>imagesArray = m_picturesArray[i];
+        QImage* destImage = imagesArray.second;
         // Запускаем createGameBoardImage в отдельном потоке
-        futures.append(QtConcurrent::run([this, params, lightMode, destImage]() {
-            this->createGameBoardImage(params, lightMode, destImage);
+        futures.append(QtConcurrent::run([this, params, destImage]() {
+            this->createGameBoardImage(params, true, destImage);
+            this->createGameBoardImage(params, false, destImage);
         }));
     }
 
@@ -91,9 +100,11 @@ void ImageProvider::generate( bool lightMode )
     }
     futures.clear();
     // Создание карты нормалей
-    for (int i = 0; i < tasks.size(); ++i) {
-        QImage* sourceImage = m_pic[i];
-        QImage* destImage = m_nmap[i];
+    for (int i = 0; i < m_picturesArray.size(); ++i) {
+        QPair<QString, QImage *>imagesArray = m_picturesArray[i];
+        QPair<QString, QImage *>normalArray = m_normalMapsArray[i];
+        QImage* sourceImage = imagesArray.second;
+        QImage* destImage = normalArray.second;
         // Запускаем createGameBoardImage в отдельном потоке
         futures.append(QtConcurrent::run([this, sourceImage, destImage]() {
             this->createNormalMapImage(sourceImage, destImage);
@@ -103,21 +114,17 @@ void ImageProvider::generate( bool lightMode )
     for (QFuture<void>& future : futures) {
         future.waitForFinished();  // Блокирует текущий поток, пока задача не завершится
     }
-#ifdef QT_DEBUG
-    int index;
-    index = 0;
-    for (const auto& map : m_pic) {
-        QString filename = QStringLiteral("m_pic_%1.png").arg(index++);
-map->save(filename);
-    }
-    index = 0;
-    for (const auto& map : m_nmap) {
-        QString filename = QStringLiteral("m_nmap%1.png").arg(index++);
-map->save(filename);
+#ifdef QT_DEBUG_1
+    for (int i = 0; i < m_picturesArray.size(); ++i) {
+        QPair<QString, QImage *>imagesArray = m_picturesArray[i];
+        QPair<QString, QImage *>normalArray = m_normalMapsArray[i];
+        QImage* sourceImage = imagesArray.second;
+        QImage* destImage = normalArray.second;
+        sourceImage->save(imagesArray.first+".png");
+        destImage->save(normalArray.first+".png");
     }
 #endif
 }
-
 
 void ImageProvider::createGameBoardImage(const QPair<int, int>& params, bool lightmode, QImage *destImage)
 {
@@ -211,3 +218,4 @@ void ImageProvider::createNormalMapImage(const QImage *srcImage,QImage *destImag
     }
     destImage->swap(normalMap);
 }
+
