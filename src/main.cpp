@@ -35,8 +35,8 @@ int main(int argc, char *argv[]) {
 #endif
 
     // Allocate [Hal] before the engine to ensure that it outlives it !!
-    QScopedPointer<Hal> m_hal(new Hal(nullptr));
-    m_hal->createAppFolder();
+    QScopedPointer<Hal> hal(new Hal(nullptr));
+    hal->createAppFolder();
 
     QCoreApplication::setOrganizationName(PACKAGE_NAME_STR);
     QCoreApplication::setApplicationName(ACTIVITY_NAME_STR);
@@ -51,23 +51,24 @@ int main(int argc, char *argv[]) {
     QQmlApplicationEngine engine;
     engine.addImportPath("qrc:/res/qml");
     QQmlContext *context = engine.rootContext();
+
     // Регистрируем провайдера изображений
-    auto m_imagePoriver = new ImageProvider();
+    QScopedPointer<ImageProvider> imageProvider(new ImageProvider());
 #ifdef QT_DEBUG
     QElapsedTimer timer;
     timer.start();
-    m_imagePoriver->generate();
-    qDebug() << "Функция выполнилась за" << timer.elapsed() << "миллисекунд";
+    imageProvider->generate();
+    qDebug() << "Image generation time" << timer.elapsed() << "ms";
 #endif
+    engine.addImageProvider("dynamic_image", imageProvider.get());
 
-    engine.addImageProvider("dynamic_image", m_imagePoriver);
 #ifdef Q_OS_ANDROID    
     QtAndroid::hideSplashScreen();
 #endif
 
     QScreen *screen = qApp->primaryScreen();
-    m_hal->setDotsPerInch( screen->physicalDotsPerInch() );
-    m_hal->setDevicePixelRatio( screen->devicePixelRatio() );
+    hal->setDotsPerInch( screen->physicalDotsPerInch() );
+    hal->setDevicePixelRatio( screen->devicePixelRatio() );
 
 #ifdef QT_DEBUG
     qDebug() << "screen->devicePixelRatio():" << screen->devicePixelRatio();
@@ -76,8 +77,8 @@ int main(int argc, char *argv[]) {
 #endif
 
     context->setContextProperty("AppVersion",VERSION_STR);
-    context->setContextProperty("isDebugMode", m_hal->getDebugMode() );           
-    context->setContextProperty("isMobile",m_hal->isRunOnMobile());
+    context->setContextProperty("isDebugMode", hal->getDebugMode() );
+    context->setContextProperty("isMobile",hal->isRunOnMobile());
 
     const QUrl url(QStringLiteral("qrc:/res/qml/main.qml"));
 
@@ -93,7 +94,7 @@ int main(int argc, char *argv[]) {
  * @sa  @link https://raymii.org/s/articles/Qt_QML_Integrate_Cpp_with_QML_and_why_ContextProperties_are_bad.html
  *
  */
-    qmlRegisterSingletonInstance("io.github.zanyxdev.floodit.hal", 1, 0,"HAL", m_hal.get());
+    qmlRegisterSingletonInstance("io.github.zanyxdev.floodit.hal", 1, 0,"HAL", hal.get());
     engine.load(url);
 
     return app.exec();

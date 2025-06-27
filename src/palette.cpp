@@ -27,6 +27,7 @@ const QStringList& Palette::allColors() const
 
 QString Palette::getRandomColor() const
 {
+
     int m_rnd = QRandomGenerator::global()->bounded(m_maxColors);
     if (m_lightMode == true && !m_lightColors.isEmpty()) {
         return m_lightColors[m_rnd];

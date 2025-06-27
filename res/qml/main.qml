@@ -27,7 +27,15 @@ QQC2.ApplicationWindow {
   // ----- Signal declarations
   signal screenOrientationUpdated(int screenOrientation)
 
-  // ----- Size information
+  // -----pseudo private fields
+  QtObject {
+    id: __p
+    // Settings
+    property bool showFogParticles: true
+    property bool showShootingStarParticles: true
+    property bool showLighting: true
+    property bool showColors: true
+  }
 
 
   /**
@@ -88,80 +96,8 @@ QQC2.ApplicationWindow {
   }
 
   // ----- Visual children
-  header: QQC2.ToolBar {
-    id: pageHeader
-    RowLayout {
-      anchors.fill: parent
-      spacing: 2
-      QQC2.ToolButton {
-        id: btnChartShow
-        Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-
-        icon.source: "qrc:/res/images/icons/ic_bar_chart.svg"
-
-        onClicked: {
-          if (isDebugMode) {
-            console.log("btnChartShow click")
-          }
-        }
-      }
-
-      // spacer item
-      Item {
-        Layout.fillHeight: true
-      }
-
-      QQC2.Label {
-        id: toolBarPageTitle
-        Layout.fillWidth: true
-
-        text: qsTr("Flood-It")
-        verticalAlignment: Text.AlignVCenter
-        horizontalAlignment: Text.AlignHCenter
-        font {
-          family: AppSingleton.astraFont.name
-          pointSize: AppSingleton.smallFontSize
-          bold: true
-        }
-      }
-
-      // spacer item
-      Item {
-        Layout.fillHeight: true
-      }
-
-      QQC2.ToolButton {
-        id: btnMoreMenu
-        visible: isMoreMenuNeed
-        icon.source: "qrc:/res/images/icons/ic_bullet.svg"
-        //action: optionsMenuAction
-        onClicked: {
-          if (isDebugMode) {
-            appWnd.boardSize = 8
-            dataManager.startNewGame(8, 7, false)
-          }
-        }
-      }
-    }
-  }
-
-  ListView {
-    id: listView
+  Carusel {
     anchors.fill: parent
-    spacing: -60
-    model: picturesModel
-    highlightFollowsCurrentItem: true
-    highlightRangeMode: ListView.StrictlyEnforceRange
-    highlightMoveDuration: 400
-    preferredHighlightBegin: appWnd.height * 0.5 - 140
-    preferredHighlightEnd: appWnd.height * 0.5 - 140
-    cacheBuffer: 4000
-    delegate: Image {
-      source: "image://dynamic_image/" + dataManager.lightMode + "/true/" + model.image
-    }
-    Component.onCompleted: {
-      AppSingleton.toLog(`picturesModel.count ${picturesModel.count}`)
-    }
   }
 
 
