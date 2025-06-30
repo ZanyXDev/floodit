@@ -81,7 +81,10 @@ void ImageProvider::generate()
     }
 
     QVector<QFuture<void>> futures;
-
+#ifdef QT_DEBUG
+    QElapsedTimer timer;
+    timer.start();
+#endif
     // Запускаем задачи в параллельных потоках
     for (int i = 0; i < tasks.size(); ++i) {
         QPair<int, int> params = tasks[i];
@@ -99,6 +102,10 @@ void ImageProvider::generate()
         future.waitForFinished();  // Блокирует текущий поток, пока задача не завершится
     }
     futures.clear();
+#ifdef QT_DEBUG
+    qDebug() << "Ожидание завершения  потоков m_pic:" << timer.elapsed() << "ms";
+    timer.start();
+#endif
     // Создание карты нормалей
     for (int i = 0; i < m_picturesArray.size(); ++i) {
         QPair<QString, QImage *>imagesArray = m_picturesArray[i];
@@ -114,6 +121,10 @@ void ImageProvider::generate()
     for (QFuture<void>& future : futures) {
         future.waitForFinished();  // Блокирует текущий поток, пока задача не завершится
     }
+#ifdef QT_DEBUG
+    qDebug() << "Создание карты нормалей:" << timer.elapsed() << "ms";
+#endif
+
 #ifdef QT_DEBUG_1
     for (int i = 0; i < m_picturesArray.size(); ++i) {
         QPair<QString, QImage *>imagesArray = m_picturesArray[i];
@@ -161,59 +172,47 @@ void ImageProvider::createGameBoardImage(const QPair<int, int>& params, bool lig
         }
     }
     painter.end();
+
 }
 
 void ImageProvider::createNormalMapImage(const QImage *srcImage,QImage *destImage)
 {
-    // Преобразование img в яркость
     QImage grayscale = srcImage->convertToFormat(QImage::Format_Grayscale8);
+    if (grayscale.isNull()) return;
 
-    if (grayscale.isNull()) return ;
-    // Простые ядра Собеля
-    int sobelX[3][3] = {
-        { -1, 0, 1 },
-        { -2, 0, 2 },
-        { -1, 0, 1 }
-    };
-    int sobelY[3][3] = {
-        { -1, -2, -1 },
-        {  0,  0,  0 },
-        {  1,  2,  1 }
-    };
-
-    int w = grayscale.width();
-    int h = grayscale.height();
+    const int w = grayscale.width();
+    const int h = grayscale.height();
     QImage normalMap(w, h, QImage::Format_RGB32);
-    //normalMap.fill("transparent");
+
+    // Блокировка битов изображения для прямого доступа
+    grayscale = grayscale.convertToFormat(QImage::Format_Grayscale8);
+    normalMap = normalMap.convertToFormat(QImage::Format_RGB32);
+
     for (int y = 1; y < h - 1; ++y) {
+        const uchar *prevLine = grayscale.constScanLine(y - 1);
+        const uchar *currLine = grayscale.constScanLine(y);
+        const uchar *nextLine = grayscale.constScanLine(y + 1);
+        QRgb *destLine = reinterpret_cast<QRgb*>(normalMap.scanLine(y));
         for (int x = 1; x < w - 1; ++x) {
-            float gx = 0, gy = 0;
+            // Применение ядер Собеля
+            float gx = -1 * prevLine[x-1] + 1 * prevLine[x+1] +
+                       -2 * currLine[x-1] + 2 * currLine[x+1] +
+                       -1 * nextLine[x-1] + 1 * nextLine[x+1];
 
-            // Применить ядра
-            for (int j = -1; j <= 1; ++j) {
-                for (int i = -1; i <= 1; ++i) {
-                    int val = qGray(grayscale.pixel(x + i, y + j));
-                    gx += val * sobelX[j + 1][i + 1];
-                    gy += val * sobelY[j + 1][i + 1];
-                }
-            }
+            float gy = -1 * prevLine[x-1] + -2 * prevLine[x] + -1 * prevLine[x+1] +
+                       1 * nextLine[x-1] +  2 * nextLine[x] +  1 * nextLine[x+1];
 
-            // Вычислить нормаль
-            float nx = -gx / 255.0f;
-            float ny = -gy / 255.0f;
-            float nz = 1.0f;
+            // Нормализация и преобразование
+            float length = std::sqrt(gx*gx + gy*gy + 255*255);
+            float nx = (-gx / 255.0f) / length;
+            float ny = (-gy / 255.0f) / length;
+            float nz = 1.0f / length;
 
-            // Нормализовать вектор
-            float length = std::sqrt(nx * nx + ny * ny + nz * nz);
-            nx /= length;
-            ny /= length;
-            nz /= length;
-            // Перевести [-1,1] в [0,255]
-            int r = static_cast<int>((nx * 0.5f + 0.5f) * 255);
-            int g = static_cast<int>((ny * 0.5f + 0.5f) * 255);
-            int b = static_cast<int>((nz * 0.5f + 0.5f) * 255);
-
-            normalMap.setPixel(x, y, qRgb(r, g, b));
+            destLine[x] = qRgb(
+                static_cast<int>((nx * 0.5f + 0.5f) * 255),
+                static_cast<int>((ny * 0.5f + 0.5f) * 255),
+                static_cast<int>((nz * 0.5f + 0.5f) * 255)
+                );
         }
     }
     destImage->swap(normalMap);
