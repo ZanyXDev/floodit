@@ -23,5 +23,5 @@ private:
     int m_height;
 
     void createGameBoardImage(const QPair<int, int>& params, bool lightmode, QImage *destImage);
-    void createNormalMapImage(const QImage *srcImage,QImage *destImage);
+    void createNormalMapImage(const QImage *srcImage,QImage *destImage,float strength = 1.0f);
 };
