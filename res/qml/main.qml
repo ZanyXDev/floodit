@@ -35,6 +35,8 @@ QQC2.ApplicationWindow {
     property bool showShootingStarParticles: true
     property bool showLighting: true
     property bool showColors: true
+    ///TODO use settings in cpp part to load|save mode
+    property bool lightMode: dataManager.lightMode
   }
 
 
@@ -97,7 +99,11 @@ QQC2.ApplicationWindow {
 
   // ----- Visual children
   Carusel {
+    id: carusel
     anchors.fill: parent
+    model: picturesModel
+    lightMode: __p.lightMode
+
   }
 
 
