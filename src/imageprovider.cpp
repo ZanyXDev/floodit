@@ -23,8 +23,8 @@ ImageProvider::~ImageProvider()
 
 QImage ImageProvider::requestImage(const QString &id, QSize *size, const QSize &requestedSize)
 {
-    // Разделяем строку "false/true/20x20x4" по символу '/'
-    QStringList parts = id.split('/');
+    // Разделяем строку "false_true_20x20x4" по символу '_'
+    QStringList parts = id.split('_');
     QString booleanLightPart = parts[0];  // "false"
     QString booleanTypePart = parts[1];  // " true"
     QString numbersPart = parts[2];  // "12x12x4"
@@ -33,16 +33,16 @@ QImage ImageProvider::requestImage(const QString &id, QSize *size, const QSize &
 
     bool isPicture = (booleanTypePart == "true");  // безопасный способ преобразования
 
-    QString findKey = QString("%1/%2").arg(booleanLightPart).arg(numbersPart);
+    QString findKey = QString("%1_%2").arg(booleanLightPart).arg(numbersPart);
     QImage res_image;
     if (isPicture){
         auto pic_it = std::find_if(m_picturesArray.begin(), m_picturesArray.end(),
                                    [&findKey](const QPair<QString, QImage*>& pair) {
-                                       qDebug()<< "findKey:"<<findKey<< " pair.first:"<<pair.first;
+                                       // qDebug()<< "findKey:"<<findKey<< " pair.first:"<<pair.first;
                                        return pair.first == findKey;
                                    });
         if (pic_it != m_picturesArray.end()){
-            res_image = *pic_it->second;
+            res_image = *pic_it->second;            
         }
     }else{
         auto norm_it = std::find_if(m_normalMapsArray.begin(), m_normalMapsArray.end(),
@@ -69,9 +69,8 @@ void ImageProvider::generate()
         for (int colors = 4; colors <= 8; colors += 2) {
             tasks.append(qMakePair(cells, colors));
             int m_size = cells * (m_height / cells );
-            // "false/20x20x4" ->"[lightmode]/[picType]/[cells x cells x colors]"
-            QString desc = QString("%1/%2x%2x%3");
-
+            // "false/20x20x4" ->"[lightmode]_[picType]_[cells x cells x colors]"
+            QString desc = QString("%1_%2x%2x%3");           
             m_picturesArray.append(qMakePair(desc.arg("true").arg(cells).arg(colors), new QImage(m_size,m_size,QImage::Format_ARGB32)));
             m_normalMapsArray.append(qMakePair(desc.arg("true").arg(cells).arg(colors), new QImage(m_size,m_size,QImage::Format_ARGB32)));
 
@@ -82,19 +81,29 @@ void ImageProvider::generate()
 
     QVector<QFuture<void>> futures;
 #ifdef QT_DEBUG
+    qDebug() <<"tasks.cout():"<<tasks.count();
     QElapsedTimer timer;
     timer.start();
 #endif
+    int img_id=0;
     // Запускаем задачи в параллельных потоках
     for (int i = 0; i < tasks.size(); ++i) {
         QPair<int, int> params = tasks[i];
-        QPair<QString, QImage *>imagesArray = m_picturesArray[i];
-        QImage* destImage = imagesArray.second;
+
+        QPair<QString, QImage *>imagesArrayLight = m_picturesArray[img_id];
+        QImage* destImageLigth = imagesArrayLight.second;
         // Запускаем createGameBoardImage в отдельном потоке
-        futures.append(QtConcurrent::run([this, params, destImage]() {
-            this->createGameBoardImage(params, true, destImage);
-            this->createGameBoardImage(params, false, destImage);
+        futures.append(QtConcurrent::run([this, params, destImageLigth]() {
+            this->createGameBoardImage(params, true, destImageLigth);
         }));
+
+        QPair<QString, QImage *>imagesArrayDark = m_picturesArray[img_id+1];
+        QImage* destImageDark = imagesArrayDark.second;
+        // Запускаем createGameBoardImage в отдельном потоке
+        futures.append(QtConcurrent::run([this, params, destImageDark]() {
+            this->createGameBoardImage(params, true, destImageDark);
+        }));
+        img_id +=2;
     }
 
     // Ожидание завершения  потоков m_pic
@@ -102,8 +111,11 @@ void ImageProvider::generate()
         future.waitForFinished();  // Блокирует текущий поток, пока задача не завершится
     }
     futures.clear();
+
 #ifdef QT_DEBUG
+    qDebug() << "m_picturesArray.count():"<< m_picturesArray.count();
     qDebug() << "Ожидание завершения  потоков m_pic:" << timer.elapsed() << "ms";
+
     timer.start();
 #endif
     // Создание карты нормалей
@@ -122,25 +134,29 @@ void ImageProvider::generate()
         future.waitForFinished();  // Блокирует текущий поток, пока задача не завершится
     }
 #ifdef QT_DEBUG
+    qDebug() << "m_normalMapsArray.count():"<< m_normalMapsArray.count();
     qDebug() << "Создание карты нормалей:" << timer.elapsed() << "ms";
-#endif
 
-#ifdef QT_DEBUG_1
     for (int i = 0; i < m_picturesArray.size(); ++i) {
         QPair<QString, QImage *>imagesArray = m_picturesArray[i];
         QPair<QString, QImage *>normalArray = m_normalMapsArray[i];
         QImage* sourceImage = imagesArray.second;
-        QImage* destImage = normalArray.second;
-        sourceImage->save(imagesArray.first+".png");
-        destImage->save(normalArray.first+".png");
+        QImage* destImage = normalArray.second;        
+        QString iFileName = QString("/tmp/%1.png");
+
+        sourceImage->save( iFileName.arg(imagesArray.first) );
+        //destImage->save( iFileName.arg(normalArray.first) );
     }
 #endif
 }
 
 void ImageProvider::createGameBoardImage(const QPair<int, int>& params, bool lightmode, QImage *destImage)
 {
-    if ( destImage->isNull() ) return;
-
+    //qDebug() << Q_FUNC_INFO << "params:"<<params;
+    if ( destImage->isNull() ) {
+        qDebug() << "Error: destImage isNull";
+        return;
+    }
     // Создание новой палитры
     auto m_pallete = std::make_unique<Palette>();
     m_pallete->setMaxColors(params.second);
@@ -163,6 +179,7 @@ void ImageProvider::createGameBoardImage(const QPair<int, int>& params, bool lig
     }
     // draw game board
     destImage->fill(Qt::transparent); // прозрачный фон
+
     painter.begin(destImage);
 
     for (int x=0;x<params.first;++x){
