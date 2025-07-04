@@ -19,6 +19,7 @@ ImageProvider::ImageProvider()
 
 ImageProvider::~ImageProvider()
 {
+    qDebug() << Q_FUNC_INFO << " destructor";
 }
 
 QImage ImageProvider::requestImage(const QString &id, QSize *size, const QSize &requestedSize)

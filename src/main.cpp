@@ -53,14 +53,15 @@ int main(int argc, char *argv[]) {
     QQmlContext *context = engine.rootContext();
 
     // Регистрируем провайдера изображений
-    QScopedPointer<ImageProvider> imageProvider(new ImageProvider());
+   ImageProvider * imageProvider =new ImageProvider();
 #ifdef QT_DEBUG
     QElapsedTimer timer;
     timer.start();
     imageProvider->generate();
     qDebug() << "Image generation time" << timer.elapsed() << "ms";
 #endif
-    engine.addImageProvider("dynamic_image", imageProvider.get());
+    // engine.addImageProvider("dynamic_image", imageProvider.get());
+    engine.addImageProvider("dynamic_image", imageProvider);
 
 #ifdef Q_OS_ANDROID    
     QtAndroid::hideSplashScreen();
