@@ -14,6 +14,10 @@ CONFIG(release,debug|release):CONFIG += add_source_task # Add source.zip to targ
 CONFIG(debug,debug|release):CONFIG += qml_debug  # Add qml_debug
 CONFIG += qmltypes
 
+# use for find segfault memory leaks
+QMAKE_CXXFLAGS += -fsanitize=address -fno-omit-frame-pointer
+LIBS += -fsanitize=address
+#end sanitize
 
 DEFINES += VERSION_STR=\\\"$$cat(version.txt)\\\"
 DEFINES += PACKAGE_NAME_STR=\\\"$$cat(package_name.txt)\\\"
