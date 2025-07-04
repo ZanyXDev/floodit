@@ -47,9 +47,9 @@ SOURCES += \
 RESOURCES += \
         images.qrc \
         qml.qrc \
+        sounds.qrc \
         fonts.qrc
 #js.qrc \
-#        sounds.qrc \
 #	i18n.qrc
 
 #Translate
