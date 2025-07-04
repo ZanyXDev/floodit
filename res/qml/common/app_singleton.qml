@@ -22,6 +22,10 @@ QtObject {
     id: astraFont
     source: "qrc:/res/fonts/PT-Astra-Serif_Regular.ttf"
   }
+  property FontLoader digitalFont: FontLoader {
+    id: digitalFont
+    source: "qrc:/res/fonts/681-font.otf"
+  }
 
   /* This is msecs. Half of second is enough for smooth animation. */
   readonly property int timer16: 16

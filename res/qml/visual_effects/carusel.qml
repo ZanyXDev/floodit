@@ -1,6 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Particles 2.15
-import QtGraphicalEffects 1.15
+
 import common 1.0
 
 Item {
@@ -32,18 +32,32 @@ Item {
     id: listView
     property bool showLighting: false
     property bool lightMode: true
-
+    focus: true // важно!
+    // Включаем обработку стрелок
+    clip: true
     anchors.fill: parent
-    spacing: -60
+    spacing: -42
     highlightFollowsCurrentItem: true
     highlightRangeMode: ListView.StrictlyEnforceRange
     highlightMoveDuration: 400
-    preferredHighlightBegin: root.height * 0.5 - 140
-    preferredHighlightEnd: root.height * 0.5 - 140
+    preferredHighlightBegin: root.height * 0.35
+    preferredHighlightEnd: root.height * 0.35
     cacheBuffer: 4000
 
     delegate: DelegateItem {
+      // Чтобы делегат мог получать фокус
+      focus: true
+      muted: true ///TODO extract to settings
+      text: model.name
       source: "image://dynamic_image/" + listView.lightMode + "_true_" + model.source
+      nMapSource: "image://dynamic_image/" + listView.lightMode + "_false_" + model.source
+      // Обработка нажатия Enter или Space
+      Keys.onPressed: {
+        console.log("event.key :", event.key)
+        if (event.key === Qt.Key_Enter || event.key === Qt.Key_Return || event.key === Qt.Key_Space) {
+          console.log("Selected item:", index)
+        }
+      }
     }
   }
   // ----- Custom non-visual children

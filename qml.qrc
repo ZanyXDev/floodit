@@ -9,5 +9,6 @@
         <file>res/qml/visual_effects/carusel.qml</file>
         <file>res/qml/visual_effects/game_pmodel.qml</file>
         <file>res/qml/visual_effects/delegate_item.qml</file>
+        <file>res/qml/t_main.qml</file>
     </qresource>
 </RCC>
