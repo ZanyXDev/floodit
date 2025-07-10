@@ -118,39 +118,60 @@ QQC2.ApplicationWindow {
       fill: parent
     }
 
-    component ProportionalRect: Item {
-      Layout.fillWidth: true
-      Layout.fillHeight: true
-      Layout.preferredWidth: 1
-      Layout.preferredHeight: 1
-    }
-    ProportionalRect {
-      id: rect_1
-      Layout.preferredWidth: 320
-      Layout.preferredHeight: 320
-      GridLayout {
-        id: boardGrid
-        anchors.fill: parent
+  AnimatedSprite {
+    id: lightImage
+    width: 64
+    height: 64
+    frameWidth: 128
+    frameHeight: 128
+    frameCount: 16
+    frameRate: 15
+    source: "qrc:/res/images/planet_sprite.png"
+    interpolate: true
+    loops: Animation.Infinite
+    visible: __p.showLighting // || settings.showShootingStarParticles
+    running: true
+    //running: !detailsView.isShown && !infoView.isShown && (settings.showLighting
+    //                                                       || settings.showShootingStarParticles)
+  }
+  PathAnimation {
+    target: lightImage
+    duration: AppSingleton.timer5000
+    orientation: PathAnimation.RightFirst
+    anchorPoint: Qt.point(lightImage.width / 2, lightImage.height / 2)
+    running: true
 
-        rows: appWnd.boardSize
-        columns: appWnd.boardSize
-        Repeater {
-          model: dataManager.boardModel
-          delegate: Rectangle {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            //Layout.preferredWidth: 320 % appWnd.boardSize
-            //Layout.preferredHeight: 320 % appWnd.boardSize
-            color: model.color
-          }
-        }
+    //paused: detailsView.isShown || infoView.isShown || (!settings.showLighting && !settings.showShootingStarParticles)
+    loops: Animation.Infinite
+
+    path: Path {
+      id: lightAnimPath
+      startX: appWnd.width * 0.5
+      startY: appWnd.height * 0.5
+
+      PathCurve {
+        x: appWnd.width * 0.75
+        y: appWnd.height * 0.25
       }
-    }
-    ProportionalRect {
-      id: rect_2
+      PathCurve {
+        x: appWnd.width * 0.75
+        y: appWnd.height * 0.75
+      }
+      PathCurve {
+        x: appWnd.width * 0.25
+        y: appWnd.height * 0.25
+      }
+      PathCurve {
+        x: appWnd.width * 0.25
+        y: appWnd.height * 0.75
+      }
+      PathCurve {
+        x: appWnd.width * 0.5
+        y: appWnd.height * 0.5
+      } // замыкаем петлю
     }
   }
-*/
+
   // ----- Qt provided non-visual children
   DataManager {
     id: dataManager
