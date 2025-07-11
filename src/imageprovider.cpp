@@ -1,157 +1,253 @@
 #include <QPainter>
 #include <QColor>
 #include <QRandomGenerator>
+#include <QtConcurrent>
+#include <QFuture>
+#include <QImage>
 
 #include "imageprovider.h"
+#include "palette.h"
 
 ImageProvider::ImageProvider()
     : QQuickImageProvider(QQuickImageProvider::Image)
+    , m_bordersize(1)
+    , m_width(208)
+    , m_height(208)
 {
-    generate();
+
 }
 
 ImageProvider::~ImageProvider()
 {
+    qDebug() << Q_FUNC_INFO << " destructor";
 }
 
 QImage ImageProvider::requestImage(const QString &id, QSize *size, const QSize &requestedSize)
 {
-    int width = 200;
-    int height = 200;
+    // Разделяем строку "false_true_20x20x4" по символу '_'
+    QStringList parts = id.split('_');
+    QString booleanLightPart = parts[0];  // "false"
+    QString booleanTypePart = parts[1];  // " true"
+    QString numbersPart = parts[2];  // "12x12x4"
 
-    QImage image(width, height, QImage::Format_ARGB32);
-    image.fill(Qt::white);
+    // Преобразуем первую часть в bool
 
-    for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
-            int r = x % 255;
-            int g = y % 255;
-            int b = (x + y) % 255;
-            image.setPixelColor(x, y, QColor(r, g, b));
+    bool isPicture = (booleanTypePart == "true");  // безопасный способ преобразования
+
+    QString findKey = QString("%1_%2").arg(booleanLightPart).arg(numbersPart);
+    QImage res_image;
+    if (isPicture){
+        auto pic_it = std::find_if(m_picturesArray.begin(), m_picturesArray.end(),
+                                   [&findKey](const QPair<QString, QImage*>& pair) {
+                                       // qDebug()<< "findKey:"<<findKey<< " pair.first:"<<pair.first;
+                                       return pair.first == findKey;
+                                   });
+        if (pic_it != m_picturesArray.end()){
+            res_image = *pic_it->second;            
+        }
+    }else{
+        auto norm_it = std::find_if(m_normalMapsArray.begin(), m_normalMapsArray.end(),
+                                    [&findKey](const QPair<QString, QImage*>& pair) {
+                                        return pair.first == findKey;
+                                    });
+        if (norm_it != m_normalMapsArray.end()){
+            res_image = *norm_it->second;
         }
     }
 
-    if (size)
-        *size = image.size();
-
-    return image;
+    return res_image;
 }
 
 void ImageProvider::generate()
 {
-    /// Move to DataManager
-    m_pic.clear();
-    m_nmap.clear();
-    Palette *m_pallete = new Palette();
+    ///TODO  don't use magical digits!!!!
+    m_picturesArray.clear();
+    m_normalMapsArray.clear();
 
-    // i = cell size 8,12,16,20
-    // c = color range 3,5,7 start with zero
-    for (int i=8;i<24; i+=4){
-        for (int c=3;c<8;c+=2){
-            m_pic.append(createImage(m_pallete,true,i,c));
-            m_pic.append(createImage(m_pallete,false,i,c));
+    // Предварительное вычисление количества элементов
+    const int numConfigs = ((24 - 8) / 4 + 1) * ((8 - 4) / 2 + 1);
+    const int totalImages = numConfigs * 2; // light and dark modes
+    m_picturesArray.reserve(totalImages);
+    m_normalMapsArray.reserve(totalImages);
+
+    /// TODO set min and max boarsize from DataManager!!!
+    // Сначала собираем все параметры для задач
+    QVector<QPair<int, int>> tasks;
+    tasks.reserve(numConfigs);
+    const QString descTemplate = "%1_%2x%2x%3";
+
+    for (int cells = 8; cells <= 24; cells += 4) {
+        const int m_size = cells * (m_height / cells);
+        for (int colors = 4; colors <= 8; colors += 2) {
+            tasks.append(qMakePair(cells, colors));            
+            // Создаем изображения заранее
+            auto createImagePair = [&](bool lightMode) {
+                QString key = descTemplate.arg(lightMode ? "true" : "false").arg(cells).arg(colors);
+                m_picturesArray.append(qMakePair(key, new QImage(m_size, m_size, QImage::Format_ARGB32)));
+                m_normalMapsArray.append(qMakePair(key, new QImage(m_size, m_size, QImage::Format_ARGB32)));
+            };
+
+            createImagePair(true);  // light mode
+            createImagePair(false); // dark mode
         }
     }
 
-    m_pallete->deleteLater();
+    QVector<QFuture<void>> futures;
+    futures.reserve(totalImages);
+
+#ifdef QT_DEBUG
+    qDebug() <<"tasks.cout():"<<tasks.count();
+    QElapsedTimer timer;
+    timer.start();
+#endif
+    // Обрабатываем light и dark режимы в одной задаче
+    for (int i = 0; i < tasks.size(); ++i) {
+        const int lightIndex = i * 2;
+        const int darkIndex = i * 2 + 1;
+
+        const auto& params = tasks[i];
+        QImage* lightImage = m_picturesArray[lightIndex].second;
+        QImage* darkImage = m_picturesArray[darkIndex].second;
+
+        futures.append(QtConcurrent::run([this, params, lightImage, darkImage]() {
+            this->createGameBoardImage(params, true, lightImage);
+            this->createGameBoardImage(params, false, darkImage);
+        }));
+    }
+
+    // Ожидание завершения  потоков m_pic
+    for (QFuture<void>& future : futures) {
+        future.waitForFinished();  // Блокирует текущий поток, пока задача не завершится
+    }
+    futures.clear();
+
+#ifdef QT_DEBUG
+    qDebug() << "m_picturesArray.count():"<< m_picturesArray.count();
+    qDebug() << "Ожидание завершения  потоков m_pic:" << timer.elapsed() << "ms";
+
+    timer.start();
+#endif
+    // Создание карты нормалей
+    futures.reserve(totalImages);
+     for (int i = 0; i < totalImages; ++i) {
+        QImage* sourceImage = m_picturesArray[i].second;
+        QImage* destImage = m_normalMapsArray[i].second;
+
+        futures.append(QtConcurrent::run([this, sourceImage, destImage]() {
+            this->createNormalMapImage(sourceImage, destImage);
+        }));
+    }
+    // Ожидание завершения  потоков m_nmap
+    for (QFuture<void>& future : futures) {
+        future.waitForFinished();  // Блокирует текущий поток, пока задача не завершится
+    }
+#ifdef QT_DEBUG
+    qDebug() << "m_normalMapsArray.count():"<< m_normalMapsArray.count();
+    qDebug() << "Создание карты нормалей:" << timer.elapsed() << "ms";
+
+    for (int i = 0; i < totalImages; ++i) {
+        const auto& imagePair = m_picturesArray[i];
+        const auto& normalPair = m_normalMapsArray[i];
+
+        imagePair.second->save("/tmp/" + imagePair.first + ".png");
+        normalPair.second->save("/tmp/normal_" + normalPair.first + ".png");
+    }
+#endif
 }
 
-QImage ImageProvider::createImage(Palette *m_pallete, bool v_mode, int v_cellInRow, int v_colors)
+void ImageProvider::createGameBoardImage(const QPair<int, int>& params, bool lightmode, QImage *destImage)
 {
-    QStringList m_colors;
-    QVector<QPixmap> coloredSquares;  // use array in the color squares
-    QVector<QPixmap> normalMapSquares;
+    //qDebug() << Q_FUNC_INFO << "params:"<<params;
+    if ( destImage->isNull() ) {
+        qDebug() << "Error: destImage isNull";
+        return;
+    }
+    // Создание новой палитры
+    auto m_pallete = std::make_unique<Palette>();
+    m_pallete->setMaxColors(params.second);
+    m_pallete->setLightMode(lightmode);
+
+    QStringList colors =m_pallete->colors();
+    QVector<QPixmap> coloredSquares;  // use array in the color
+
     QPainter painter;
-    QColor pixelColor;
-    int imgSize = 200;
-    int cellSize = imgSize / v_cellInRow;
-    int borderSize =2;
-
-    m_pallete->setColorMode(v_mode);
-    m_pallete->setMaxColors(v_colors);
-    m_colors = m_pallete->colors();
-
-    for (int i=0;i<m_colors.count();++i) {
-        QColor tmp_color = m_colors.at(i);
+    int cellSize = destImage->height() / params.first;
+    for (const auto& color : colors) {
         QPixmap pixmap(cellSize, cellSize);
         pixmap.fill(Qt::transparent); // прозрачный фон
 
         painter.begin(&pixmap);
-        painter.fillRect(borderSize,borderSize, cellSize-(2*borderSize), cellSize-(2*borderSize), tmp_color);
+        painter.fillRect(m_bordersize,m_bordersize, cellSize-(2*m_bordersize), cellSize-(2*m_bordersize), color);
         painter.end();
+
         coloredSquares.append(pixmap);
-
-        // Рисуем карту нормалей для блока
-        QPixmap pixmapNormal(cellSize, cellSize);
-        pixmapNormal.fill(QColor(128,128,200)); // # По умолчанию (плоская поверхность)
-        pixelColor.setRgb(50,50,200); // / Границы  - углубление
-        QPen pen;
-        pen.setWidth(borderSize);
-        pen.setColor(pixelColor);
-
-        painter.begin(&pixmapNormal);
-        painter.setPen(pen);
-        painter.drawRect(0,0, cellSize, cellSize);
-        painter.fillRect(borderSize,borderSize, (2*borderSize), cellSize-(2*borderSize), normalToColor(hexColorToNormal(tmp_color)));
-        painter.end();
-        normalMapSquares.append(pixmapNormal);
     }
-
     // draw game board
-    QImage image(cellSize *v_cellInRow, cellSize*v_cellInRow, QImage::Format_ARGB32);
-    image.fill(Qt::transparent); // прозрачный фон
-    painter.begin(&image);
+    destImage->fill(Qt::transparent); // прозрачный фон
 
-    // create normal map
-    QImage normalMap(cellSize *v_cellInRow, cellSize*v_cellInRow, QImage::Format_ARGB32);
-    normalMap.fill(QColor(128,128,200)); // # По умолчанию (плоская поверхность)
-    QPainter painterNormal;
-    painterNormal.begin(&normalMap);
+    painter.begin(destImage);
 
-    for (int i=0;i<v_cellInRow;++i){
-        for (int j=0;j<v_cellInRow;++j){
-            int index = QRandomGenerator::global()->bounded(v_colors);
-            painter.drawPixmap(i * cellSize, j * cellSize, coloredSquares[index]);
-            painterNormal.drawPixmap(i * cellSize, j * cellSize, normalMapSquares[index]);
+    for (int x=0;x<params.first;++x){
+        for (int y=0;y<params.first;++y){
+            int index = QRandomGenerator::global()->bounded(colors.count());
+            painter.drawPixmap(x * cellSize, y * cellSize, coloredSquares[index]);
         }
     }
     painter.end();
-    painterNormal.end();
 
-#ifdef QT_DEBUG
-    image.save(QString("%1x%1x%2x%3.png").arg(v_cellInRow).arg(v_colors).arg(v_mode), "PNG");
-    normalMap.save(QString("%1x%1x%2x%3_nmap.png").arg(v_cellInRow).arg(v_colors).arg(v_mode), "PNG");
+}
 
-     for (int i=0;i<normalMapSquares.count();++i){
-        normalMapSquares.at(i).save(QString("normal_map_%1_%2.png").arg(v_cellInRow).arg(i), "PNG");
+void ImageProvider::createNormalMapImage(const QImage *srcImage,QImage *destImage,float strength )
+{
+    if (srcImage->isNull() || destImage->isNull()) return;
+
+    // Конвертируем в grayscale, если нужно
+    QImage grayscale;
+    if (srcImage->format() != QImage::Format_Grayscale8) {
+        grayscale = srcImage->convertToFormat(QImage::Format_Grayscale8);
+    } else {
+        grayscale = *srcImage;
     }
-#endif
-    m_nmap.append(normalMap);
-    return image;
-}
 
-QVector3D ImageProvider::hexColorToNormal(const QColor &color)
-{
-    auto r = color.redF() / 255.0f;
-    auto g = color.greenF() / 255.0f;
-    auto b = color.blueF() / 255.0f;
-    // Переводим в диапазон [-1, 1]
-    QVector3D normal(
-        (r - 0.5f) * 2.0f,
-        (g - 0.5f) * 2.0f,
-        (b - 0.5f) * 2.0f
-        );
-    // Нормализуем вектор
-    normal.normalize();
-    return normal;
-}
+    if (grayscale.isNull()) return;
 
-QColor ImageProvider::normalToColor(const QVector3D &normal)
-{
-    // Переводим из [-1, 1] в [0, 255]
-    int r = static_cast<int>((normal.x() + 1.0f) * 127.5f);
-    int g = static_cast<int>((normal.y() + 1.0f) * 127.5f);
-    int b = static_cast<int>((normal.z() + 1.0f) * 127.5f);
-    return QColor(r, g, b);
+
+    const int width = grayscale.width();
+    const int height = grayscale.height();
+
+    // Создаем нормальную карту в правильном формате
+    QImage normalMap(width, height, QImage::Format_RGB32);
+    // Обработка краевых пикселей (заполняем нейтральным цветом)
+    normalMap.fill(QColor(127, 127, 255).rgb());
+    for (int y = 1; y < height - 1; ++y) {
+        const uchar *prevLine = grayscale.constScanLine(y - 1);
+        const uchar *currLine = grayscale.constScanLine(y);
+        const uchar *nextLine = grayscale.constScanLine(y + 1);
+
+        QRgb *destLine = reinterpret_cast<QRgb*>(normalMap.scanLine(y));
+
+        for (int x = 1; x < width - 1; ++x) {
+            // Вычисление градиентов по Собелю
+            float gx = -1.0f * prevLine[x-1] + 1.0f * prevLine[x+1] +
+                       -2.0f * currLine[x-1] + 2.0f * currLine[x+1] +
+                       -1.0f * nextLine[x-1] + 1.0f * nextLine[x+1];
+
+            float gy = -1.0f * prevLine[x-1] + -2.0f * prevLine[x] + -1.0f * prevLine[x+1] +
+                       1.0f * nextLine[x-1] +  2.0f * nextLine[x] +  1.0f * nextLine[x+1];
+
+            // Нормализация вектора
+            float length = qSqrt(gx*gx + gy*gy + 255.0f*255.0f);
+            float nx = (-gx * strength) / length;
+            float ny = (-gy * strength) / length;
+            float nz = 255.0f / length;
+            // Преобразование в цветовое пространство [0,255]
+            destLine[x] = qRgb(
+                static_cast<int>((nx + 1.0f) * 127.5f),
+                static_cast<int>((ny + 1.0f) * 127.5f),
+                static_cast<int>(nz)
+                );
+        }
+    }
+    destImage->swap(normalMap);
 }
 

@@ -3,17 +3,15 @@
 TEMPLATE +=app
 TARGET = FloodIt
 
-QT       += core qml quick quickcontrols2 multimedia svg
+QT       += core qml quick quickcontrols2 multimedia svg concurrent
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
-CONFIG += bump_version
+CONFIG(release,debug|release):CONFIG += bump_version
 CONFIG += c++17
 CONFIG += resources_big
 CONFIG(release,debug|release):CONFIG += qtquickcompiler # Qt Quick compiler
-CONFIG(release,debug|release):CONFIG += add_source_task # Add source.zip to target
 CONFIG(debug,debug|release):CONFIG += qml_debug  # Add qml_debug
 CONFIG += qmltypes
-
 
 DEFINES += VERSION_STR=\\\"$$cat(version.txt)\\\"
 DEFINES += PACKAGE_NAME_STR=\\\"$$cat(package_name.txt)\\\"
@@ -49,9 +47,9 @@ SOURCES += \
 RESOURCES += \
         images.qrc \
         qml.qrc \
+        sounds.qrc \
         fonts.qrc
 #js.qrc \
-#        sounds.qrc \
 #	i18n.qrc
 
 #Translate
@@ -81,11 +79,24 @@ QML2_IMPORT_PATH = $$PWD/res/qml
 QML_IMPORT_NAME = io.github.zanyxdev.floodit
 QML_IMPORT_MAJOR_VERSION = 1
 
-add_source_task{
-#https://raymii.org/s/blog/Existing_GPL_software_for_sale.html
-    message("add source.zip")
-    #system(cd $$PWD; cd ../;rm source.zip; zip -r source.zip .)
-    #RESOURCES += source.qrc
+
+!build_pass:!debug_and_release*: CONFIG -= add_source_task
+
+contains(CONFIG, add_source_task) {
+    message("Adding source.zip for distribution. See more https://raymii.org/s/blog/Existing_GPL_software_for_sale.html")
+    system(rm -f $$OUT_PWD/source.zip && cd $$PWD && zip -r $$OUT_PWD/source.zip . -i \*.cpp \*.h \*.qml \*.qrc \*.txt \*.pro)
+    #system( create sourceqrc)
+    RESOURCES += source.qrc
+}
+
+!build_pass:!debug*: CONFIG = memory_leaks_task
+
+contains(CONFIG, memory_leaks_task) {
+    message("Enable memory leaks task")
+    # use for find segfault memory leaks
+    QMAKE_CXXFLAGS += -fsanitize=address -fno-omit-frame-pointer
+    LIBS += -fsanitize=address
+    #end sanitize
 }
 
 bump_version{

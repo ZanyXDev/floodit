@@ -17,17 +17,17 @@ QQC2.ApplicationWindow {
   readonly property bool appInForeground: Qt.application.state === Qt.ApplicationActive
 
   property bool appInitialized: false
-  property bool isMoreMenuNeed: true
 
   property var screenWidth: Screen.width
   property var screenHeight: Screen.height
   property var screenAvailableWidth: Screen.desktopAvailableWidth
   property var screenAvailableHeight: Screen.desktopAvailableHeight
-  property int boardSize: 4
+
+  ///TODO use settings in cpp part to load|save mode
+  property bool lightMode: dataManager.lightMode
+
   // ----- Signal declarations
   signal screenOrientationUpdated(int screenOrientation)
-
-  // ----- Size information
 
 
   /**
@@ -57,6 +57,17 @@ QQC2.ApplicationWindow {
   // ----- States and transitions.
   // ----- Signal handlers
   Component.onCompleted: {
+
+    // Write to model default values from QSetting
+    ///TODO read from  dataManager (need use settings for read|save values)
+    appSettingsModel.setProperty(0, "widthPortition", appWnd.width)
+    appSettingsModel.setProperty(0, "heightPortition", appWnd.height)
+    appSettingsModel.setProperty(0, "showFogParticles", true)
+    appSettingsModel.setProperty(0, "showShootingStarParticles", true)
+    appSettingsModel.setProperty(0, "showLighting", true)
+    appSettingsModel.setProperty(0, "showColors", true)
+    appSettingsModel.setProperty(0, "boardSize", 4)
+
     let infoMsg = `Screen.height[${Screen.height}], Screen.width[${Screen.width}]
     Screen [height ${height},width ${width}]
     Build with [${HAL.getAppBuildInfo()}]
@@ -68,9 +79,9 @@ QQC2.ApplicationWindow {
     if (!isMobile) {
       appWnd.moveToCenter()
     }
-    appWnd.boardSize = 6
-    dataManager.startNewGame(6, 4, false)
-    AppSingleton.toLog(`dataManager.boardModel.rowCount [${dataManager.boardModel.rowCount()}]`)
+    // appWnd.boardSize = 6
+    // dataManager.startNewGame(6, 4, false)
+    //AppSingleton.toLog(`dataManager.boardModel.rowCount [${dataManager.boardModel.rowCount()}]`)
   }
 
   onAppInForegroundChanged: {
@@ -88,139 +99,102 @@ QQC2.ApplicationWindow {
   }
 
   // ----- Visual children
-  header: QQC2.ToolBar {
-    id: pageHeader
-    RowLayout {
-      anchors.fill: parent
-      spacing: 2
-      QQC2.ToolButton {
-        id: btnChartShow
-        Layout.alignment: Qt.AlignTop | Qt.AlignLeft
+  Carusel {
+    id: carusel
 
-        icon.source: "qrc:/res/images/icons/ic_bar_chart.svg"
-
-        onClicked: {
-          if (isDebugMode) {
-            console.log("btnChartShow click")
-          }
-        }
-      }
-
-      // spacer item
-      Item {
-        Layout.fillHeight: true
-      }
-
-      QQC2.Label {
-        id: toolBarPageTitle
-        Layout.fillWidth: true
-
-        text: qsTr("Flood-It")
-        verticalAlignment: Text.AlignVCenter
-        horizontalAlignment: Text.AlignHCenter
-        font {
-          family: AppSingleton.astraFont.name
-          pointSize: AppSingleton.smallFontSize
-          bold: true
-        }
-      }
-
-      // spacer item
-      Item {
-        Layout.fillHeight: true
-      }
-
-      QQC2.ToolButton {
-        id: btnMoreMenu
-        visible: isMoreMenuNeed
-        icon.source: "qrc:/res/images/icons/ic_bullet.svg"
-        //action: optionsMenuAction
-        onClicked: {
-          if (isDebugMode) {
-            appWnd.boardSize = 8
-            dataManager.startNewGame(8, 7, false)
-          }
-        }
-      }
-    }
-  }
-
-  ListView {
-    id: listView
     anchors.fill: parent
-    spacing: -60
     model: picturesModel
-    highlightFollowsCurrentItem: true
-    highlightRangeMode: ListView.StrictlyEnforceRange
-    highlightMoveDuration: 400
-    preferredHighlightBegin: appWnd.height * 0.5 - 140
-    preferredHighlightEnd: appWnd.height * 0.5 - 140
-    cacheBuffer: 4000
-    // delegate: DelegateItem {
-    //   name: model.name
-    // }
+    settingModel: appSettingsModel
     Component.onCompleted: {
-      AppSingleton.toLog(`picturesModel.count ${picturesModel.count}`)
-      AppSingleton.toLog(`picturesModel.name ${picturesModel.name}`)
-    }
-  }
-
-
-  /**
-  ColumnLayout {
-    visible: true
-    id: mainColumnLayout
-
-    spacing: 4
-    anchors {
-      margins: 4
-      fill: parent
-    }
-
-    component ProportionalRect: Item {
-      Layout.fillWidth: true
-      Layout.fillHeight: true
-      Layout.preferredWidth: 1
-      Layout.preferredHeight: 1
-    }
-    ProportionalRect {
-      id: rect_1
-      Layout.preferredWidth: 320
-      Layout.preferredHeight: 320
-      GridLayout {
-        id: boardGrid
-        anchors.fill: parent
-
-        rows: appWnd.boardSize
-        columns: appWnd.boardSize
-        Repeater {
-          model: dataManager.boardModel
-          delegate: Rectangle {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            //Layout.preferredWidth: 320 % appWnd.boardSize
-            //Layout.preferredHeight: 320 % appWnd.boardSize
-            color: model.color
-          }
-        }
+      if (isDebugMode) {
+        AppSingleton.toTagLog("carusel", "completed")
+        AppSingleton.toTagLog("carusel", "lightImage.y:" + lightImage.y)
+        AppSingleton.toTagLog("carusel", "appWnd.height:" + appWnd.height)
       }
     }
-    ProportionalRect {
-      id: rect_2
+  }
+  AnimatedSprite {
+    id: lightImage
+    width: 64
+    height: 64
+    frameWidth: 128
+    frameHeight: 128
+    frameCount: 16
+    frameRate: 15
+    source: "qrc:/res/images/planet_sprite.png"
+    interpolate: true
+    loops: Animation.Infinite
+    visible: appSettingsModel.get(0).showLighting
+    running: true
+    //running: !detailsView.isShown && !infoView.isShown && (settings.showLighting
+    //                                                       || settings.showShootingStarParticles)
+    onXChanged: {
+      appSettingsModel.setProperty(0, "globalLightPosX", lightImage.x / appWnd.width)
+    }
+    onYChanged: {
+      appSettingsModel.setProperty(0, "globalLightPosY", lightImage.y / appWnd.height)
     }
   }
-*/
+  PathAnimation {
+    target: lightImage
+    duration: AppSingleton.timer5000
+    orientation: PathAnimation.RightFirst
+    anchorPoint: Qt.point(lightImage.width / 2, lightImage.height / 2)
+    running: true
+
+    //paused: detailsView.isShown || infoView.isShown || (!settings.showLighting && !settings.showShootingStarParticles)
+    loops: Animation.Infinite
+
+    path: Path {
+      id: lightAnimPath
+      startX: appWnd.width * 0.5
+      startY: appWnd.height * 0.5
+
+      PathCurve {
+        x: appWnd.width * 0.75
+        y: appWnd.height * 0.25
+      }
+      PathCurve {
+        x: appWnd.width * 0.75
+        y: appWnd.height * 0.75
+      }
+      PathCurve {
+        x: appWnd.width * 0.25
+        y: appWnd.height * 0.25
+      }
+      PathCurve {
+        x: appWnd.width * 0.25
+        y: appWnd.height * 0.75
+      }
+      PathCurve {
+        x: appWnd.width * 0.5
+        y: appWnd.height * 0.5
+      } // замыкаем петлю
+    }
+  }
+
   // ----- Qt provided non-visual children
   DataManager {
     id: dataManager
-    Component.onCompleted: {
-
-      //AppSingleton.toLog(`dataManager.boardModel.rowCount [${dataManager.boardModel.rowCount()}]`)
-    }
   }
 
   GamePreviewModel {
     id: picturesModel
+  }
+
+  ListModel {
+    id: appSettingsModel
+    ListElement {
+      globalLightPosX: 0
+      globalLightPosY: 0
+      showFogParticles: true
+      showShootingStarParticles: true
+      showLighting: true
+      showColors: true
+      widthPortition: 0
+      heightPortition: 0
+      boardSize: 4
+    }
   }
   // ----- Custom non-visual children
 

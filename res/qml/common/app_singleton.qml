@@ -22,6 +22,10 @@ QtObject {
     id: astraFont
     source: "qrc:/res/fonts/PT-Astra-Serif_Regular.ttf"
   }
+  property FontLoader digitalFont: FontLoader {
+    id: digitalFont
+    source: "qrc:/res/fonts/681-font.otf"
+  }
 
   /* This is msecs. Half of second is enough for smooth animation. */
   readonly property int timer16: 16
@@ -30,9 +34,14 @@ QtObject {
   readonly property int timer500: 500
   readonly property int timer1500: 1500
   readonly property int timer2000: 2000
+  readonly property int timer5000: 5000
 
   function toLog(msg) {
     console.log(`${msg}`)
+  }
+
+  function toTagLog(tag, msg) {
+    console.log(`[${tag}]:${msg}`)
   }
 
   /** Checks to see if a given width is considered "small" for the theme */

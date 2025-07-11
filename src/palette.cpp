@@ -5,7 +5,7 @@
 Palette::Palette(QObject *parent)
     : QObject{parent}
     , m_maxColors (4)
-    , m_colorMode (false)
+    , m_lightMode (true)
 {
     m_allColors << "#eb0000" << "#ffa305" << "#003beb" << "#00eb3b" << "#00e6e6" << "#8005ab" << "#f4f512" << "#eb00b0"
                 << "#b30000" << "#b37d20" << "#1842bf" << "#00b32d" << "#00b3b3" << "#6f0096" << "#b4b523" << "#b30086";
@@ -17,7 +17,7 @@ Palette::Palette(QObject *parent)
 
 const QStringList& Palette::colors() const
 {
-    return m_colorMode ? m_darkColors : m_lightColors;
+    return m_lightMode ? m_lightColors: m_darkColors ;
 }
 
 const QStringList& Palette::allColors() const
@@ -27,11 +27,12 @@ const QStringList& Palette::allColors() const
 
 QString Palette::getRandomColor() const
 {
+
     int m_rnd = QRandomGenerator::global()->bounded(m_maxColors);
-    if (m_colorMode == true && !m_darkColors.isEmpty()) {
-        return m_darkColors[m_rnd];
-    } else if (!m_lightColors.isEmpty()) {
+    if (m_lightMode == true && !m_lightColors.isEmpty()) {
         return m_lightColors[m_rnd];
+    } else if (!m_darkColors.isEmpty()) {
+        return m_darkColors[m_rnd];
     }
 
     return QString(); // fallback
@@ -44,10 +45,10 @@ QString Palette::getColorFromId(int id) const
 
     int m_idx = id % m_maxColors;
 
-    if (m_colorMode && !m_darkColors.isEmpty()) {
-        return m_darkColors[m_idx];
-    } else if (!m_lightColors.isEmpty()) {
+    if (m_lightMode == true && !m_lightColors.isEmpty()) {
         return m_lightColors[m_idx];
+    } else if (!m_darkColors.isEmpty()) {
+        return m_darkColors[m_idx];
     }
 
     return QString();
@@ -55,7 +56,7 @@ QString Palette::getColorFromId(int id) const
 
 void Palette::setMaxColors(int a_maxColors)
 {
-    if (!isInRange(a_maxColors, 3, 7)) {
+    if (!isInRange(a_maxColors, 4, 8)) {
         return; // некорректный размер
     }
 
@@ -65,7 +66,7 @@ void Palette::setMaxColors(int a_maxColors)
 
     // Создаём список индексов от 0 до  m_maxColors
     QVector<int> indices;
-    for (int i = 0; i <= m_maxColors; ++i) {
+    for (int i = 0; i < m_maxColors; ++i) {
         indices.append(i);
     }
     // Перемешиваем индексы
@@ -77,13 +78,13 @@ void Palette::setMaxColors(int a_maxColors)
     for (int i = 0; i < m_maxColors; ++i) {
         int idx = indices[i];
         m_lightColors.append(m_allColors[idx]);
-        m_darkColors.append(m_allColors[idx + 8]); // темный аналог
+        m_darkColors.append(m_allColors[idx + 7]); // темный аналог
     }
 }
 
-void Palette::setColorMode(bool m_mode)
+void Palette::setLightMode(bool lightMode)
 {
-    m_colorMode = m_mode;
+    m_lightMode = lightMode;
 }
 
 
