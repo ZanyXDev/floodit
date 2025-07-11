@@ -40,6 +40,10 @@ QtObject {
     console.log(`${msg}`)
   }
 
+  function toTagLog(tag, msg) {
+    console.log(`[${tag}]:${msg}`)
+  }
+
   /** Checks to see if a given width is considered "small" for the theme */
   function is_width_small(width) {
     return (width < root.min_width_threshold)

@@ -2,16 +2,19 @@ import QtQuick 2.15
 import QtQuick.Layouts 1.15
 import QtMultimedia 5.15
 import QtGraphicalEffects 1.15
+
 import common 1.0
 
 Rectangle {
   id: root
-  property bool isShaderEnable: true
+  property bool showLighting
+  property bool isSelected: listView.currentIndex === index
+
   property alias muted: playClick.muted
   property alias text: titleText.text
-  property bool isSelected: listView.currentIndex === index
   property alias source: imageItem.source
-  property alias nMapSource: imageNMap.source
+  property alias nMapSource: imageItem.nMapSource
+
   opacity: 1.0 - Math.abs((listView.currentIndex - index) * 0.25)
 
   height: 264
@@ -49,7 +52,6 @@ Rectangle {
   ColumnLayout {
     visible: true
     id: delegeteColumnLayout
-    anchors.fill: parent
     spacing: 2
     anchors {
       margins: 2
@@ -75,25 +77,13 @@ Rectangle {
       styleColor: "#b0a030"
     }
 
-    Image {
+    LightImage {
       id: imageItem
       Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
-      smooth: true
-      mipmap: true
+      showLighting: root.showLighting
     }
   }
   // ----- no visual items
-  // Normal-mapped cover shared among delegates
-  ShaderEffectSource {
-    id: coverNmapSource
-    sourceItem: Image {
-      id: imageNMap
-      source: "qrc:/res/images/cover_nmap.png"
-    }
-    hideSource: true
-    visible: false
-  }
-
   SoundEffect {
     id: playClick
     source: "qrc:/res/sounds/click.wav"

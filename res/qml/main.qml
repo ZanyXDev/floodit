@@ -17,27 +17,17 @@ QQC2.ApplicationWindow {
   readonly property bool appInForeground: Qt.application.state === Qt.ApplicationActive
 
   property bool appInitialized: false
-  property bool isMoreMenuNeed: true
 
   property var screenWidth: Screen.width
   property var screenHeight: Screen.height
   property var screenAvailableWidth: Screen.desktopAvailableWidth
   property var screenAvailableHeight: Screen.desktopAvailableHeight
-  property int boardSize: 4
+
+  ///TODO use settings in cpp part to load|save mode
+  property bool lightMode: dataManager.lightMode
+
   // ----- Signal declarations
   signal screenOrientationUpdated(int screenOrientation)
-
-  // -----pseudo private fields
-  QtObject {
-    id: __p
-    // Settings
-    property bool showFogParticles: true
-    property bool showShootingStarParticles: true
-    property bool showLighting: true
-    property bool showColors: true
-    ///TODO use settings in cpp part to load|save mode
-    property bool lightMode: dataManager.lightMode
-  }
 
 
   /**
@@ -67,6 +57,17 @@ QQC2.ApplicationWindow {
   // ----- States and transitions.
   // ----- Signal handlers
   Component.onCompleted: {
+
+    // Write to model default values from QSetting
+    ///TODO read from  dataManager (need use settings for read|save values)
+    appSettingsModel.setProperty(0, "widthPortition", appWnd.width)
+    appSettingsModel.setProperty(0, "heightPortition", appWnd.height)
+    appSettingsModel.setProperty(0, "showFogParticles", true)
+    appSettingsModel.setProperty(0, "showShootingStarParticles", true)
+    appSettingsModel.setProperty(0, "showLighting", true)
+    appSettingsModel.setProperty(0, "showColors", true)
+    appSettingsModel.setProperty(0, "boardSize", 4)
+
     let infoMsg = `Screen.height[${Screen.height}], Screen.width[${Screen.width}]
     Screen [height ${height},width ${width}]
     Build with [${HAL.getAppBuildInfo()}]
@@ -78,9 +79,9 @@ QQC2.ApplicationWindow {
     if (!isMobile) {
       appWnd.moveToCenter()
     }
-    appWnd.boardSize = 6
-    dataManager.startNewGame(6, 4, false)
-    AppSingleton.toLog(`dataManager.boardModel.rowCount [${dataManager.boardModel.rowCount()}]`)
+    // appWnd.boardSize = 6
+    // dataManager.startNewGame(6, 4, false)
+    //AppSingleton.toLog(`dataManager.boardModel.rowCount [${dataManager.boardModel.rowCount()}]`)
   }
 
   onAppInForegroundChanged: {
@@ -100,24 +101,18 @@ QQC2.ApplicationWindow {
   // ----- Visual children
   Carusel {
     id: carusel
+
     anchors.fill: parent
     model: picturesModel
-    lightMode: __p.lightMode
-
-  }
-
-
-  /**
-  ColumnLayout {
-    visible: true
-    id: mainColumnLayout
-
-    spacing: 4
-    anchors {
-      margins: 4
-      fill: parent
+    settingModel: appSettingsModel
+    Component.onCompleted: {
+      if (isDebugMode) {
+        AppSingleton.toTagLog("carusel", "completed")
+        AppSingleton.toTagLog("carusel", "lightImage.y:" + lightImage.y)
+        AppSingleton.toTagLog("carusel", "appWnd.height:" + appWnd.height)
+      }
     }
-
+  }
   AnimatedSprite {
     id: lightImage
     width: 64
@@ -129,10 +124,16 @@ QQC2.ApplicationWindow {
     source: "qrc:/res/images/planet_sprite.png"
     interpolate: true
     loops: Animation.Infinite
-    visible: __p.showLighting // || settings.showShootingStarParticles
+    visible: appSettingsModel.get(0).showLighting
     running: true
     //running: !detailsView.isShown && !infoView.isShown && (settings.showLighting
     //                                                       || settings.showShootingStarParticles)
+    onXChanged: {
+      appSettingsModel.setProperty(0, "globalLightPosX", lightImage.x / appWnd.width)
+    }
+    onYChanged: {
+      appSettingsModel.setProperty(0, "globalLightPosY", lightImage.y / appWnd.height)
+    }
   }
   PathAnimation {
     target: lightImage
@@ -175,14 +176,25 @@ QQC2.ApplicationWindow {
   // ----- Qt provided non-visual children
   DataManager {
     id: dataManager
-    Component.onCompleted: {
-
-      //AppSingleton.toLog(`dataManager.boardModel.rowCount [${dataManager.boardModel.rowCount()}]`)
-    }
   }
 
   GamePreviewModel {
     id: picturesModel
+  }
+
+  ListModel {
+    id: appSettingsModel
+    ListElement {
+      globalLightPosX: 0
+      globalLightPosY: 0
+      showFogParticles: true
+      showShootingStarParticles: true
+      showLighting: true
+      showColors: true
+      widthPortition: 0
+      heightPortition: 0
+      boardSize: 4
+    }
   }
   // ----- Custom non-visual children
 
