@@ -4,6 +4,5 @@
         <file>res/images/icons/ic_drawer.svg</file>
         <file>res/images/icons/ic_bar_chart.svg</file>
         <file>res/images/planet_sprite.png</file>
-        <file>auto_tst/tst_ligthimage.qml</file>
     </qresource>
 </RCC>
