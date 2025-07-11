@@ -1,10 +1,10 @@
+QT += testlib
+
 TEMPLATE = app
 
-TARGET = io.github.zanyxdev.floodit.tests
+TARGET = io.github.zanyxdev.floodit.tst_myclass
 
 CONFIG += console qt
-
-QT += testlib
 CONFIG += testcase
 CONFIG += no_testcase_installs
 

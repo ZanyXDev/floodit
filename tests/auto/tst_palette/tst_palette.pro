@@ -1,18 +1,19 @@
 QT += testlib
-QT -= gui
+TEMPLATE = app
 
 TARGET = io.github.zanyxdev.floodit.tst_palette
 
-CONFIG += qt console warn_on depend_includepath testcase
+CONFIG += console qt
+CONFIG += testcase
 CONFIG += no_testcase_installs
 CONFIG -= app_bundle
 
-TEMPLATE = app
+
 INCLUDEPATH += ../../../app/
 include(../../../app/app.pri)
 
 HEADERS += \
                         tst_palette.h
-SOURCES +=  \
-                        tst_palette.cpp \
-                        main.cpp
+SOURCES +=  \                       
+                        main.cpp \
+    tst_palette.cpp

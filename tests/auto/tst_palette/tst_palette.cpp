@@ -1,10 +1,16 @@
 #include "tst_palette.h"
 
+#include <QtTest/QtTest>
 
-TestPalete::TestPalete() {}
+TestPalette::TestPalette() {}
 
-TestPalete::~TestPalete() {}
+TestPalette::~TestPalette() {}
 
-void TestPalete::test_case1() {}
+void TestPalette::init()
+{
+
+}
+
+void TestPalette::test_case1() {}
 
 

@@ -1,4 +1,6 @@
-#include <QtTest>
+#pragma once
+
+#include <QObject>
 #include "src/palette.h"
 
 // add necessary includes here
@@ -11,9 +13,10 @@ public:
     TestPalette();
     ~TestPalette();
 
-private slots:
+private :
     Palette m_palette;
-
+private slots:
+    void init();
     void test_case1();
 };
 
