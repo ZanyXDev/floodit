@@ -15,8 +15,17 @@ public:
 
 private :
     Palette m_palette;
+
 private slots:
+    // вызывается перед первой тестовой функцией
+    void initTestCase();
+    // вызывается перед каждой тестовой функцией
     void init();
-    void test_case1();
+    // вызывается после каждой тестовой функции
+    void cleanup();
+    // вызывается после последней тестовой функции
+    void cleanupTestCase();
+
+    void test_getRandomColor();
 };
 
