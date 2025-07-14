@@ -24,4 +24,5 @@ private:
     QStringList m_allColors;
 
     bool isInRange(int value, int min, int max);
+    int putInRang(int value);
 };
