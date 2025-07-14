@@ -37,18 +37,15 @@ QString Palette::getRandomColor() const
 
 QString Palette::getColorFromId(int id) const
 {
+    if ( (m_darkColors.isEmpty() ||  m_lightColors.isEmpty())  ) return QString(); // fallback
+
     if (id < 0)
         id = -id; // make positive
 
     int m_idx = id % m_maxColors;
 
-    if (m_lightMode == true && !m_lightColors.isEmpty()) {
-        return m_lightColors[m_idx];
-    } else if (!m_darkColors.isEmpty()) {
-        return m_darkColors[m_idx];
-    }
+    return (m_lightMode) ? m_lightColors[m_idx]: m_darkColors[m_idx];
 
-    return QString();
 }
 
 void Palette::setMaxColors(int a_maxColors)
@@ -86,7 +83,7 @@ bool Palette::isInRange(int value, int min, int max) {
     return (value >= min) && (value <= max);
 }
 
-int Palette::putInRang(int value)
+int Palette::putInRang(int value) const
 {
     if (value <= 4) return 4;
     if (value < 6) return 4;

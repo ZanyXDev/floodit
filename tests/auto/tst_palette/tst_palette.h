@@ -29,5 +29,8 @@ private slots:
 
     void test_setMaxColors();
     void test_setMaxColors_data();
+
+    void test_getColorFromId();
+    void test_getColorFromId_data();
 };
 

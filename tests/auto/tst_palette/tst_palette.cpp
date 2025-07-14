@@ -58,6 +58,19 @@ void TestPalette::test_setMaxColors_data()
     QTest::newRow("maxColor_9") <<  9  << 8;
 }
 
+void TestPalette::test_getColorFromId()
+{
+
+}
+
+void TestPalette::test_getColorFromId_data()
+{
+    QTest::addColumn<int>("id");
+    QTest::addColumn<bool>("result");
+
+    QTest::newRow("id_-1") << -1 << 4;
+}
+
 
 
 
