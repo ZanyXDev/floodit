@@ -2,8 +2,6 @@
 
 #include <QObject>
 
-
-
 // add necessary includes here
 
 class TestPalette : public QObject
@@ -13,7 +11,6 @@ class TestPalette : public QObject
 public:
     TestPalette();
     ~TestPalette();
-
 
 private slots:
     // вызывается перед первой тестовой функцией
