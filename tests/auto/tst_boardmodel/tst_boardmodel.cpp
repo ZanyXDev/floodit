@@ -1,5 +1,5 @@
 #include "tst_boardmodel.h"
-#include "src/palette.h"
+#include "src/boardmodel.h"
 
 #include <QtTest/QtTest>
 
