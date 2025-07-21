@@ -1,8 +1,10 @@
 #pragma once
 
 #include <QObject>
+#include "src/boardmodel.h"
 
 // add necessary includes here
+#include <QAbstractItemModelTester>
 
 class TestBoardModel: public QObject
 {
@@ -21,6 +23,14 @@ private slots:
     void cleanup(){};
     // вызывается после последней тестовой функции
     void cleanupTestCase(){};
-
+    void testRowCount();
+    void testData();
+    void testSetData();
+    void testClear();
+    void testAddCell();
+    void testDataChanged();
+private:
+    BoardModel m_model;
+    QAbstractItemModelTester* m_tester;
 };
 
