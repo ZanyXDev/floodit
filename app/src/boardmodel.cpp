@@ -20,7 +20,12 @@ int BoardModel::rowCount(const QModelIndex &parent) const
 
 int BoardModel::columnCount(const QModelIndex &parent) const
 {
-    return parent.isValid() ? 0 : this->roleNames().count();
+    // QAbstractListModel предполагает одну колонку
+    // (т.е. columnCount() == 1)
+    // А Роли это не ячейки в строке, а дополнительные ствойства
+    // конкретной ячейки!!!!!
+    Q_UNUSED(parent);
+    return 1;
 }
 
 QVariant BoardModel::data(const QModelIndex &index, int role) const
