@@ -50,11 +50,14 @@ bool BoardModel::setData(const QModelIndex &index, const QVariant &value, int ro
 {
     if (!index.isValid() || index.row() >= m_data.size())
         return false;
+
     if (role != FilledRole && role != ColorRole)
         return false;
+
     CellItem& cellItem = m_data[index.row()];
 
     bool flag{false};
+
     switch(role) {
     case FilledRole:
         flag = value.canConvert<bool>();
@@ -76,7 +79,7 @@ bool BoardModel::setData(const QModelIndex &index, const QVariant &value, int ro
  * что все роли следует считать измененными. Порядок элементов в аргументе
  * roles не имеет значения.
  */
-    if (flag) emit dataChanged(index, index,{FilledRole, ColorRole });
+    if (flag) emit dataChanged(index, index, {role} );
 
     return flag;
 }
@@ -115,6 +118,7 @@ void BoardModel::addCell(const QString &v_color)
     CellItem cellItem;
     cellItem.m_filled= false;
     cellItem.m_color = v_color;
+
     beginInsertRows(QModelIndex(), rowCount(), rowCount());
     m_data.append(cellItem);
     endInsertRows();
