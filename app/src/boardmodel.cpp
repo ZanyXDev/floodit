@@ -6,10 +6,11 @@ BoardModel::BoardModel(QObject *parent)
 
 QHash<int, QByteArray> BoardModel::roleNames() const
 {
-    QHash<int, QByteArray> roles;
-
-    roles[FilledRole]="filled";
-    roles[ColorRole]="color";
+    static QHash<int, QByteArray> roles;
+    if (roles.isEmpty()) {
+        roles[FilledRole] = "filled";
+        roles[ColorRole] = "color";
+    }
     return roles;
 }
 
@@ -49,7 +50,8 @@ bool BoardModel::setData(const QModelIndex &index, const QVariant &value, int ro
 {
     if (!index.isValid() || index.row() >= m_data.size())
         return false;
-
+    if (role != FilledRole && role != ColorRole)
+        return false;
     CellItem& cellItem = m_data[index.row()];
 
     bool flag{false};
@@ -68,7 +70,13 @@ bool BoardModel::setData(const QModelIndex &index, const QVariant &value, int ro
         flag = false;
     }
 
-    if (flag) emit dataChanged(index, index); // Always dataChanged first column in row. is is valid ???
+    /**
+ * Необязательный аргумент roles можно использовать для указания того, какие роли
+ * данных были фактически изменены. Пустой вектор в аргументе roles означает,
+ * что все роли следует считать измененными. Порядок элементов в аргументе
+ * roles не имеет значения.
+ */
+    if (flag) emit dataChanged(index, index,{FilledRole, ColorRole });
 
     return flag;
 }
@@ -78,6 +86,7 @@ Qt::ItemFlags BoardModel::flags(const QModelIndex &index) const
 {
     if (!index.isValid()) return Qt::NoItemFlags;
     return Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable;
+
 }
 
 QModelIndex BoardModel::index(int row, int column, const QModelIndex &parent) const
@@ -101,10 +110,12 @@ void BoardModel::clear()
 
 void BoardModel::addCell(const QString &v_color)
 {
+    if ( v_color.isEmpty() || !QColor(v_color).isValid() ) return;
+
     CellItem cellItem;
-    beginInsertRows(QModelIndex(), m_data.size(), m_data.size());
     cellItem.m_filled= false;
-    cellItem.m_color =v_color;
+    cellItem.m_color = v_color;
+    beginInsertRows(QModelIndex(), rowCount(), rowCount());
     m_data.append(cellItem);
     endInsertRows();
 }
