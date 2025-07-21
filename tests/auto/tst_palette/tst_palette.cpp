@@ -72,8 +72,8 @@ void TestPalette::test_getColorFromId()
         qDebug() << "Returns color:" << color;
         QVERIFY2(!color.isEmpty(),"Always need return color");
         QVERIFY2(p.colors().contains(color),"Returns color is outside allColors array");
-        qDebug() << "Returns colors array:" << p.colors();
-        qDebug()  << "Returns colors_id:" << p.colors().indexOf(color);
+        qDebug()  << "Returns colors array:" << p.colors();
+        qDebug()  << "Returns color_id:" << p.colors().indexOf(color);
         QVERIFY2(p.colors().indexOf(color)==return_id,"Returns color id not eq color id in list");
 
     };
@@ -88,9 +88,9 @@ void TestPalette::test_getColorFromId()
 
 void TestPalette::test_getColorFromId_data()
 {
-    QTest::addColumn<int>("id");
-    QTest::addColumn<int>("max_color");
-    QTest::addColumn<int>("return_id");
+    QTest::addColumn<int>("id"); //asked id
+    QTest::addColumn<int>("max_color"); // max color in the array
+    QTest::addColumn<int>("return_id"); // return color id
 
     QTest::newRow("id_-1,4") << -1 << 4  << 1;
     QTest::newRow("id_0,4")  << 0  << 4  << 0;
@@ -121,6 +121,23 @@ void TestPalette::test_getColorFromId_data()
     QTest::newRow("id_11,6")  << 11  << 6  << 5;
     QTest::newRow("id_12,6")  << 12  << 6  << 0;
 
+    QTest::newRow("id_-1,8") << -1 << 8  << 1;
+    QTest::newRow("id_0,8")  << 0  << 8  << 0;
+    QTest::newRow("id_1,8")  << 1  << 8  << 1;
+    QTest::newRow("id_2,8")  << 2  << 8  << 2;
+    QTest::newRow("id_3,8")  << 3  << 8  << 3;
+    QTest::newRow("id_4,8")  << 4  << 8  << 4;
+    QTest::newRow("id_5,8")  << 5  << 8  << 5;
+    QTest::newRow("id_6,8")  << 6  << 8  << 6;
+    QTest::newRow("id_7,8")  << 7  << 8  << 7;
+    QTest::newRow("id_8,8")  << 8  << 8  << 0;
+    QTest::newRow("id_9,8")  << 9  << 8  << 1;
+    QTest::newRow("id_10,8")  << 10  << 8  << 2;
+    QTest::newRow("id_11,8")  << 11  << 8  << 3;
+    QTest::newRow("id_12,8")  << 12  << 8  << 4;
+    QTest::newRow("id_13,8")  << 13  << 8  << 5;
+    QTest::newRow("id_14,8")  << 14  << 8  << 6;
+    QTest::newRow("id_15,8")  << 15  << 8  << 7;
 }
 
 
