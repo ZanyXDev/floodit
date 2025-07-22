@@ -17,3 +17,6 @@ HEADERS += \
 SOURCES +=  \                       
                         main.cpp \
 		    tst_boardmodel.cpp
+
+# Force C++17 if available
+contains(QT_CONFIG, c++1z): CONFIG += c++1z
