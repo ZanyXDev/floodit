@@ -1,7 +1,7 @@
 #pragma once
 
 #include <QObject>
-#include "src/imageprovider.h"
+#include <QtTest/QtTest>
 
 // add necessary includes here
 
@@ -10,8 +10,8 @@ class TestImageProvider: public QObject
     Q_OBJECT
 
 public:
-    TestImageProvider();
-    ~TestImageProvider();
+    TestImageProvider(){};
+    ~TestImageProvider(){};
 
 private slots:
     // вызывается перед первой тестовой функцией
@@ -21,7 +21,7 @@ private slots:
     // вызывается после каждой тестовой функции
     void cleanup(){};
     // вызывается после последней тестовой функции
-    void cleanupTestCase(){};
-private:
+    void cleanupTestCase();;
+//private:
 };
 
