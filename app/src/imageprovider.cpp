@@ -26,6 +26,10 @@ QImage ImageProvider::requestImage(const QString &id, QSize *size, const QSize &
 {
     // Разделяем строку "false_true_20x20x4" по символу '_'
     QStringList parts = id.split('_');
+    if (parts.size() < 3) {
+        qWarning() << "Invalid image ID format:" << id;
+        return QImage();
+    }
     QString booleanLightPart = parts[0];  // "false"
     QString booleanTypePart = parts[1];  // " true"
     QString numbersPart = parts[2];  // "12x12x4"
@@ -35,27 +39,9 @@ QImage ImageProvider::requestImage(const QString &id, QSize *size, const QSize &
     bool isPicture = (booleanTypePart == "true");  // безопасный способ преобразования
 
     QString findKey = QString("%1_%2").arg(booleanLightPart).arg(numbersPart);
-    QImage res_image;
-    if (isPicture){
-        auto pic_it = std::find_if(m_picturesArray.begin(), m_picturesArray.end(),
-                                   [&findKey](const QPair<QString, QImage*>& pair) {
-                                       // qDebug()<< "findKey:"<<findKey<< " pair.first:"<<pair.first;
-                                       return pair.first == findKey;
-                                   });
-        if (pic_it != m_picturesArray.end()){
-            res_image = *pic_it->second;            
-        }
-    }else{
-        auto norm_it = std::find_if(m_normalMapsArray.begin(), m_normalMapsArray.end(),
-                                    [&findKey](const QPair<QString, QImage*>& pair) {
-                                        return pair.first == findKey;
-                                    });
-        if (norm_it != m_normalMapsArray.end()){
-            res_image = *norm_it->second;
-        }
-    }
 
-    return res_image;
+    return (isPicture) ? findImage(findKey,m_picturesArray)->copy()
+                       : findImage(findKey,m_normalMapsArray)->copy();
 }
 
 void ImageProvider::generate()
@@ -79,7 +65,7 @@ void ImageProvider::generate()
             auto createImagePair = [&](bool lightMode) {
                 QString key = descTemplate.arg(lightMode ? "true" : "false").arg(cells).arg(colors);
                 m_picturesArray.append(qMakePair(key, new QImage(m_size, m_size, QImage::Format_ARGB32)));
-                m_normalMapsArray.append(qMakePair(key, new QImage(m_size, m_size, QImage::Format_ARGB32)));
+                m_normalMapsArray.append(qMakePair(key, new QImage(m_size, m_size, QImage::Format_Indexed8 )));
             };
 
             createImagePair(true);  // light mode
@@ -261,5 +247,13 @@ void ImageProvider::clearCache()
         }
         m_normalMapsArray.clear();
     }
+}
+
+QImage *ImageProvider::findImage(const QString &key, const QVector<QPair<QString, QImage *> > &array)
+{
+    auto it = std::find_if(array.begin(), array.end(), [&key](const auto& p) {
+        return p.first == key;
+    });
+    return it != array.end() ? it->second : nullptr;
 }
 
