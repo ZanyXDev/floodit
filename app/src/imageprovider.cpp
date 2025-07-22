@@ -61,8 +61,8 @@ QImage ImageProvider::requestImage(const QString &id, QSize *size, const QSize &
 void ImageProvider::generate()
 {
     ///TODO  don't use magical digits!!!!
-    m_picturesArray.clear();
-    m_normalMapsArray.clear();
+
+    clearCache();
 
     // Предварительное вычисление количества элементов
     const int numConfigs = ((24 - 8) / 4 + 1) * ((8 - 4) / 2 + 1);
@@ -129,7 +129,7 @@ void ImageProvider::generate()
 #endif
     // Создание карты нормалей
     futures.reserve(totalImages);
-     for (int i = 0; i < totalImages; ++i) {
+    for (int i = 0; i < totalImages; ++i) {
         QImage* sourceImage = m_picturesArray[i].second;
         QImage* destImage = m_normalMapsArray[i].second;
 
@@ -249,5 +249,22 @@ void ImageProvider::createNormalMapImage(const QImage *srcImage,QImage *destImag
         }
     }
     destImage->swap(normalMap);
+}
+
+void ImageProvider::clearCache()
+{
+    if ( !m_picturesArray.isEmpty()) {
+        for (auto& pair : m_picturesArray) {
+            delete pair.second;
+        }
+        m_picturesArray.clear();
+    }
+
+    if (!m_normalMapsArray.isEmpty()){
+        for (auto& pair : m_normalMapsArray) {
+            delete pair.second;
+        }
+        m_normalMapsArray.clear();
+    }
 }
 
