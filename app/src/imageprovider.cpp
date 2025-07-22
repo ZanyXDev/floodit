@@ -11,8 +11,8 @@
 ImageProvider::ImageProvider()
     : QQuickImageProvider(QQuickImageProvider::Image)
     , m_bordersize(1)
-    , m_width(208)
-    , m_height(208)
+    , m_width(IMAGE_SIZE)
+    , m_height(IMAGE_SIZE)
 {
 
 }
@@ -60,13 +60,8 @@ QImage ImageProvider::requestImage(const QString &id, QSize *size, const QSize &
 
 void ImageProvider::generate()
 {
-    ///TODO  don't use magical digits!!!!
 
     clearCache();
-
-    // Предварительное вычисление количества элементов
-    const int numConfigs = ((24 - 8) / 4 + 1) * ((8 - 4) / 2 + 1);
-    const int totalImages = numConfigs * 2; // light and dark modes
     m_picturesArray.reserve(totalImages);
     m_normalMapsArray.reserve(totalImages);
 
@@ -76,9 +71,9 @@ void ImageProvider::generate()
     tasks.reserve(numConfigs);
     const QString descTemplate = "%1_%2x%2x%3";
 
-    for (int cells = 8; cells <= 24; cells += 4) {
+    for (int cells = MIN_CELLS; cells <= MAX_CELLS; cells += CELL_STEP) {
         const int m_size = cells * (m_height / cells);
-        for (int colors = 4; colors <= 8; colors += 2) {
+        for (int colors = MIN_COLORS; colors <= MAX_COLORS; colors += COLOR_STEP) {
             tasks.append(qMakePair(cells, colors));            
             // Создаем изображения заранее
             auto createImagePair = [&](bool lightMode) {
