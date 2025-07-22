@@ -1,8 +1,9 @@
+#include <QtConcurrent>
+#include <QFuture>
+
 #include <QPainter>
 #include <QColor>
 #include <QRandomGenerator>
-#include <QtConcurrent>
-#include <QFuture>
 #include <QImage>
 
 #include "imageprovider.h"

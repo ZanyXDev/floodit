@@ -29,10 +29,12 @@ private:
     static const int MAX_COLORS = 8;
     static const int COLOR_STEP = 2;
     static const int IMAGE_SIZE = 208;
+    // Предварительное вычисление количества элементов
     static const int numConfigs = ((MAX_CELLS - MIN_CELLS) / CELL_STEP + 1) * ((MAX_COLORS - MIN_COLORS) / COLOR_STEP + 1);
     static const int totalImages = numConfigs * 2; // light and dark modes
 
     void createGameBoardImage(const QPair<int, int>& params, bool lightmode, QImage *destImage);
     void createNormalMapImage(const QImage *srcImage,QImage *destImage,float strength = 1.0f);
     void clearCache();
+    QImage* findImage(const QString& key, const QVector<QPair<QString, QImage*>>& array);
 };
