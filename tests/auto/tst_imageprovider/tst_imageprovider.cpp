@@ -5,7 +5,8 @@
 
 void TestImageProvider::initTestCase()
 {
-
+    m_imageProvider = new ImageProvider();
+    engine.addImageProvider("dynamic_image",  m_imageProvider );
 }
 
 void TestImageProvider::init()

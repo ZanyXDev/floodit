@@ -2,6 +2,8 @@
 
 #include <QObject>
 #include <QtTest/QtTest>
+#include <QQmlEngine>
+#include "src/imageprovider.h"
 
 // add necessary includes here
 
@@ -22,6 +24,8 @@ private slots:
     void cleanup(){};
     // вызывается после последней тестовой функции
     void cleanupTestCase();;
-//private:
+private:
+    ImageProvider *m_imageProvider;
+    QQmlEngine engine;
 };
 
