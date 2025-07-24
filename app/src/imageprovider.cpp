@@ -15,7 +15,12 @@ ImageProvider::ImageProvider()
     , m_width(IMAGE_SIZE)
     , m_height(IMAGE_SIZE)
 {
-
+    for (int cells = MIN_CELLS; cells <= MAX_CELLS; cells += CELL_STEP){
+        m_cells_sizes.append(cells);
+    }
+    for (int colors = MIN_COLORS; colors <= MAX_COLORS; colors += COLOR_STEP) {
+        m_colors_count.append(colors);
+    }
 }
 
 ImageProvider::~ImageProvider()
@@ -28,7 +33,7 @@ QImage ImageProvider::requestImage(const QString &id, QSize *size, const QSize &
     // Разделяем строку "false_true_20x20x4" по символу '_'
     QStringList parts = id.split('_');
     if (parts.size() < 3) {
-        qWarning() << "Invalid image ID format:" << id;
+        qWarning() << "Invalid image ID format:" << id;        
         return QImage();
     }
     QString booleanLightPart = parts[0];  // "false"
@@ -47,7 +52,6 @@ QImage ImageProvider::requestImage(const QString &id, QSize *size, const QSize &
 
 void ImageProvider::generate()
 {
-
     clearCache();
     m_picturesArray.reserve(totalImages);
     m_normalMapsArray.reserve(totalImages);
@@ -135,6 +139,56 @@ void ImageProvider::generate()
         normalPair.second->save("/tmp/normal_" + normalPair.first + ".png");
     }
 #endif
+}
+
+QString ImageProvider::getImageFindKey(const QString &id, bool &isPicture, bool &ok) const
+{
+    ok = false;
+    isPicture = false;
+
+    // Быстрая проверка очевидных ошибок
+    if (id.isEmpty() || id.count('_') != 2 || id.count('x') != 2) {
+        return QString();
+    }
+
+    // Разделяем строку "false_true_20x20x4" по символу '_'
+    QStringList parts = id.split('_');
+    if (parts.size() < 3) {
+        return QString();
+    }
+
+    const QString &booleanLightPart = parts[0].toLower();
+    const QString &booleanTypePart = parts[1].toLower();
+    const QString &numbersPart = parts[2];
+
+    // Проверка булевых значений
+    if (booleanLightPart != "true" && booleanLightPart != "false") {
+        return QString();
+    }
+    if (booleanTypePart != "true" && booleanTypePart != "false") {
+        return QString();
+    }
+
+    // Преобразуем первую часть в bool
+    isPicture = (booleanTypePart == "true");  // безопасный способ преобразования
+
+    QStringList cellsColors = numbersPart.split('x');
+    if (cellsColors.size() < 3) {
+        return QString();
+    }
+
+    bool conversionOk;
+    int cell1 = cellsColors[0].toInt(&conversionOk);
+    if (!conversionOk) return QString();
+
+    int cell2 = cellsColors[1].toInt(&conversionOk);
+    if (!conversionOk || cell1 != cell2) return QString();
+
+    int colors = cellsColors[2].toInt(&conversionOk);
+    if (!conversionOk) return QString();
+
+    ok = ( m_cells_sizes.contains(cell1) && (m_colors_count.contains(colors)) );
+    return QString("%1_%2").arg(booleanLightPart).arg(numbersPart);
 }
 
 void ImageProvider::createGameBoardImage(const QPair<int, int>& params, bool lightmode, QImage *destImage)

@@ -13,6 +13,7 @@ public:
     QImage requestImage(const QString &id, QSize *size, const QSize &requestedSize) override;
 public:
     void generate();
+    QString getImageFindKey(const QString &id, bool &isPicture, bool &ok) const;
 
 private:
     QVector<QPair<QString, QImage *>> m_picturesArray;
@@ -21,6 +22,9 @@ private:
     int m_bordersize;
     int m_width;
     int m_height;
+    QVector<int> m_cells_sizes;
+    QVector<int> m_colors_count;
+
     static const int MIN_CELLS = 8;
     static const int MAX_CELLS = 24;
     static const int CELL_STEP = 4;
@@ -37,4 +41,5 @@ private:
     void createNormalMapImage(const QImage *srcImage,QImage *destImage,float strength = 1.0f);
     void clearCache();
     QImage* findImage(const QString& key, const QVector<QPair<QString, QImage*>>& array);
+
 };

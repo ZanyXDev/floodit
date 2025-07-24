@@ -65,14 +65,18 @@ void TestImageProvider::testGetImageFindKey()
 {
     QFETCH(QString, imageId);
     QFETCH(bool,isParsed);
+    QFETCH(bool,isPicture);
+
     QFETCH(QString, findKey);
 
-    bool ok = false;
-    QString m_findKey = m_imageProvider->getImageFindKey(imageId,ok);
+    bool m_parsed = false;
+    bool m_picture = false;
+    QString m_findKey = m_imageProvider->getImageFindKey(imageId,m_picture,m_parsed);
 
-    QCOMPARE(ok ,isParsed );
+    QCOMPARE(m_parsed ,isParsed );
     if (isParsed) {
-        QCOMPARE(m_findKey ,findKey);
+        QCOMPARE(m_picture, isPicture);
+        QCOMPARE(m_findKey, findKey);
     }
 }
 
@@ -80,37 +84,58 @@ void TestImageProvider::testGetImageFindKey_data()
 {
     QTest::addColumn<QString>("imageId");
     QTest::addColumn<bool>("isParsed");
+    QTest::addColumn<bool>("isPicture");
     QTest::addColumn<QString>("findKey");
 
-    // Valid cases
-    QTest::newRow("valid_8x8x4")  << "true_false_8x8x4"    << true << "8x8x4";
-    QTest::newRow("valid_8x8x6")  << "true_false_8x8x6"    << true << "8x8x6";
-    QTest::newRow("valid_8x8x6")  << "true_false_8x8x8"    << true << "8x8x8";
+    // Valid cases [isLight_isPicture_CELLSxCELLSxCOLORS]
+    // -----------      test name    ---------   imageId   ---      isParsed   isPicture findKey
+    QTest::newRow("valid_8x8x4_picture")  << "true_true_8x8x4"      << true   << true    << "true_8x8x4";
+    QTest::newRow("valid_8x8x6_picture")  << "true_true_8x8x6"      << true   << true    << "true_8x8x6";
+    QTest::newRow("valid_8x8x6_picture")  << "true_true_8x8x8"      << true   << true    << "true_8x8x8";
+    QTest::newRow("valid_8x8x4_nmap")     << "true_false_8x8x4"     << true   << false   << "true_8x8x4";
+    QTest::newRow("valid_8x8x6_nmap")     << "true_false_8x8x6"     << true   << false   << "true_8x8x6";
+    QTest::newRow("valid_8x8x6_nmap")     << "true_false_8x8x8"     << true   << false   << "true_8x8x8";
 
-    QTest::newRow("valid_12x12x4") << "false_true_12x12x4"  << true << "12x12x4";
-    QTest::newRow("valid_12x12x6") << "false_true_12x12x6"  << true << "12x12x6";
-    QTest::newRow("valid_12x12x8") << "false_true_12x12x8"  << true << "12x12x8";
+    QTest::newRow("valid_12x12x4_picture") << "false_true_12x12x4"  << true << true  << "false_12x12x4";
+    QTest::newRow("valid_12x12x6_picture") << "false_true_12x12x6"  << true << true  << "false_12x12x6";
+    QTest::newRow("valid_12x12x8_picture") << "false_true_12x12x8"  << true << true  << "false_12x12x8";
+    QTest::newRow("valid_12x12x4_nmap")    << "false_false_12x12x4" << true << false << "false_12x12x4";
+    QTest::newRow("valid_12x12x6_nmap")    << "false_false_12x12x6" << true << false << "false_12x12x6";
+    QTest::newRow("valid_12x12x8_nmap")    << "false_false_12x12x8" << true << false << "false_12x12x8";
 
-    QTest::newRow("valid_16x16x4") << "true_true_16x16x4"   << true << "16x16x4";
-    QTest::newRow("valid_16x16x6") << "true_true_16x16x6"   << true << "16x16x6";
-    QTest::newRow("valid_16x16x8") << "true_true_16x16x8"   << true << "16x16x8";
+    QTest::newRow("valid_16x16x4_picture") << "true_true_16x16x4"   << true << true << "true_16x16x4";
+    QTest::newRow("valid_16x16x6_picture") << "true_true_16x16x6"   << true << true << "true_16x16x6";
+    QTest::newRow("valid_16x16x8_picture") << "true_true_16x16x8"   << true << true << "true_16x16x8";
+    QTest::newRow("valid_16x16x4_nmap")    << "true_false_16x16x4"      << true << false << "true_16x16x4";
+    QTest::newRow("valid_16x16x6_nmap")    << "true_false_16x16x6"      << true << false << "true_16x16x6";
+    QTest::newRow("valid_16x16x8_nmap")    << "true_false_16x16x8"      << true << false << "true_16x16x8";
 
-    QTest::newRow("valid_20x20x4") << "false_false_20x20x4" << true << "20x20x4";
-    QTest::newRow("valid_20x20x6") << "false_false_20x20x6" << true << "20x20x6";
-    QTest::newRow("valid_20x20x8") << "false_false_20x20x8" << true << "20x20x8";
+    QTest::newRow("valid_20x20x4_picture") << "false_true_20x20x4" << true << true<< "false_20x20x4";
+    QTest::newRow("valid_20x20x6_picture") << "false_true_20x20x6" << true << true<< "false_20x20x6";
+    QTest::newRow("valid_20x20x8_picture") << "false_true_20x20x8" << true << true<< "false_20x20x8";
+    QTest::newRow("valid_20x20x4_nmap")    << "false_false_20x20x4"    << true << false<< "false_20x20x4";
+    QTest::newRow("valid_20x20x6_nmap")    << "false_false_20x20x6"    << true << false<< "false_20x20x6";
+    QTest::newRow("valid_20x20x8_namp")    << "false_false_20x20x8"    << true << false<< "false_20x20x8";
+
+    QTest::newRow("valid_24x24x4_picture") << "false_true_24x24x4" << true << true<< "false_24x24x4";
+    QTest::newRow("valid_24x24x6_picture") << "false_true_24x24x6" << true << true<< "false_24x24x6";
+    QTest::newRow("valid_24x24x8_picture") << "false_true_24x24x8" << true << true<< "false_24x24x8";
+    QTest::newRow("valid_24x24x4_nmap")    << "false_false_24x24x4"    << true << false<< "false_24x24x4";
+    QTest::newRow("valid_24x24x6_nmap")    << "false_false_24x24x6"    << true << false<< "false_24x24x6";
+    QTest::newRow("valid_24x24x8_namp")    << "false_false_24x24x8"    << true << false<< "false_24x24x8";
 
     // Invalid cases
-    QTest::newRow("invalid_format") << "invalid_string" << false << "";
-    QTest::newRow("invalid_cells_1") << "true_false_1x1x4" << false << "";
-    QTest::newRow("invalid_cells_2") << "true_false_2x3x4" << false << "";
-    QTest::newRow("invalid_cells_3") << "true_false_3x3x4" << false << "";
-    QTest::newRow("invalid_cells_5") << "true_false_5x5x4" << false << "";
-    QTest::newRow("invalid_cells_7") << "true_false_7x7x4" << false << "";
-    QTest::newRow("invalid_cells_9") << "true_false_9x9x4" << false << "";
-    QTest::newRow("invalid_cells_24") << "true_false_24x24x4" << false << "";
-    QTest::newRow("invalid_colors_3") << "false_true_8x8x3" << false << "";
-    QTest::newRow("invalid_colors_9") << "false_false_12x12x9" << false << "";
-    QTest::newRow("empty_string") << "" << false << "";
-    QTest::newRow("wrong_delimiters") << "true.false.8x8x4" << false << "";
+    QTest::newRow("invalid_format")   << "invalid_string"      << false << false << "";
+    QTest::newRow("invalid_cells_1")  << "true_false_1x1x4"    << false << false  << "";
+    QTest::newRow("invalid_cells_2")  << "true_false_2x3x4"    << false << false  << "";
+    QTest::newRow("invalid_cells_3")  << "true_false_3x3x4"    << false << false << "";
+    QTest::newRow("invalid_cells_5")  << "true_false_5x5x4"    << false << false << "";
+    QTest::newRow("invalid_cells_7")  << "true_false_7x7x4"    << false << false  << "";
+    QTest::newRow("invalid_cells_9")  << "true_false_9x9x4"    << false << false  << "";
+    QTest::newRow("invalid_cells_24x25") << "true_false_24x25x4"  << false << false  << "";
+    QTest::newRow("invalid_colors_3") << "false_true_8x8x3"    << false << false  << "";
+    QTest::newRow("invalid_colors_9") << "false_false_12x12x9" << false << false  << "";
+    QTest::newRow("wrong_delimiters") << "true.false.8x8x4"    << false << false  << "";
+    QTest::newRow("empty_string")     << "" << false  << false << "";
 }
 
