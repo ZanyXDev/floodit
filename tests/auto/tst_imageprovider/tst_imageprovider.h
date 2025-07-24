@@ -23,7 +23,11 @@ private slots:
     // вызывается после каждой тестовой функции
     void cleanup(){};
     // вызывается после последней тестовой функции
-    void cleanupTestCase();;
+    void cleanupTestCase();
+    void testRequestImage();
+    void testRequestImage_data();
+    void testGetImageFindKey();
+    void testGetImageFindKey_data();
 private:
     ImageProvider *m_imageProvider;
     QQmlEngine engine;
