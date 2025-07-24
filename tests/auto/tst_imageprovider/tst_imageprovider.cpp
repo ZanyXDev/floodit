@@ -27,7 +27,7 @@ void TestImageProvider::cleanupTestCase()
 
 void TestImageProvider::testRequestImage()
 {
-    QFETCH(QString, reqImage);
+    QFETCH(QString, imageId);
     QFETCH(bool,isExist);
     QFETCH(int,sizeWidth);
     QFETCH(int,sizeHeight);
@@ -37,7 +37,7 @@ void TestImageProvider::testRequestImage()
     QSize actualSize;
     QImage image;
 
-    image = m_imageProvider->requestImage(reqImage, &actualSize,
+    image = m_imageProvider->requestImage(imageId, &actualSize,
                                           QSize(reqSizeWidth, reqSizeHeight));
 
     QCOMPARE(image.isNull(),isExist); // Verify image is not null
@@ -51,14 +51,15 @@ void TestImageProvider::testRequestImage()
 
 void TestImageProvider::testRequestImage_data()
 {
-    QTest::addColumn<QString>("reqImage");
+    QTest::addColumn<QString>("imageId");
     QTest::addColumn<bool>("isExist");
     QTest::addColumn<int>("sizeWidth");
     QTest::addColumn<int>("sizeHeight");
     QTest::addColumn<int>("reqSizeWidth");
     QTest::addColumn<int>("reqSizeHeight");
 
-    QTest::newRow("request_wrong_image") << "wrong_image" << true << -1 << -1 << 0 << 0;
+    QTest::newRow("valid_8x8x4_pic_img") << "true_true_8x8x4" << true  << 208 << 208 << 208 << 208;
+    QTest::newRow("request_wrong_image") << "wrong_image"     << false << -1  << -1  << 0   << 0;
 }
 
 void TestImageProvider::testGetImageFindKey()

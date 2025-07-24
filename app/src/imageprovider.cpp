@@ -30,24 +30,25 @@ ImageProvider::~ImageProvider()
 
 QImage ImageProvider::requestImage(const QString &id, QSize *size, const QSize &requestedSize)
 {
-    // Разделяем строку "false_true_20x20x4" по символу '_'
-    QStringList parts = id.split('_');
-    if (parts.size() < 3) {
-        qWarning() << "Invalid image ID format:" << id;        
-        return QImage();
+    bool m_parsed = false;
+    bool m_picture = false;
+    const QString &m_findKey = getImageFindKey(id,m_picture,m_parsed);
+
+    if (m_parsed) {
+        QImage *ret_image = (m_picture) ? findImage(m_findKey,m_picturesArray) : findImage(m_findKey,m_normalMapsArray);
+        QImage req_image;
+        if (ret_image !=nullptr){
+            req_image = ret_image->copy();
+            if (size) {
+                *size = req_image.size();
+            }
+            if (requestedSize.width() > 0 && requestedSize.height() > 0 ){
+                return req_image.scaled(requestedSize.width(), requestedSize.height(), Qt::KeepAspectRatio);
+            }
+            return req_image;
+        }
     }
-    QString booleanLightPart = parts[0];  // "false"
-    QString booleanTypePart = parts[1];  // " true"
-    QString numbersPart = parts[2];  // "12x12x4"
-
-    // Преобразуем первую часть в bool
-
-    bool isPicture = (booleanTypePart == "true");  // безопасный способ преобразования
-
-    QString findKey = QString("%1_%2").arg(booleanLightPart).arg(numbersPart);
-
-    return (isPicture) ? findImage(findKey,m_picturesArray)->copy()
-                       : findImage(findKey,m_normalMapsArray)->copy();
+    return QImage();
 }
 
 void ImageProvider::generate()
@@ -157,7 +158,7 @@ QString ImageProvider::getImageFindKey(const QString &id, bool &isPicture, bool 
         return QString();
     }
 
-    const QString &booleanLightPart = parts[0].toLower();
+    const QString &booleanLightPart = parts[0].toLower(); // Нет копирования QString !!!!
     const QString &booleanTypePart = parts[1].toLower();
     const QString &numbersPart = parts[2];
 
