@@ -2,7 +2,7 @@
 
 #include <QObject>
 #include <QtTest/QtTest>
-#include "src/imagenerator.h"
+#include "src/imagegenerator.h"
 
 // add necessary includes here
 
@@ -24,6 +24,6 @@ private slots:
     // вызывается после последней тестовой функции
     void cleanupTestCase();
 private:
-
+    ImageGenerator *m_imageGenerator;
 };
 
