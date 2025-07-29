@@ -2,7 +2,7 @@ QT += testlib core concurrent qml quick gui
 
 TEMPLATE = app
 
-TARGET = io.github.zanyxdev.floodit.tst_imagegeneator
+TARGET = io.github.zanyxdev.floodit.tst_imagegenerator
 
 CONFIG += testcase
 
@@ -18,3 +18,5 @@ SOURCES +=  \
 
 # Force C++17 if available
 contains(QT_CONFIG, c++1z): CONFIG += c++1z
+# Enable CCache
+load(ccache)

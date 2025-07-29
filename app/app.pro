@@ -1,5 +1,4 @@
 !versionAtLeast(QT_VERSION, 5.15.0):error("Requires Qt version 5.15.0 or greater.")
-
 TEMPLATE +=app
 TARGET = FloodIt
 
@@ -7,7 +6,6 @@ QT       += core qml quick quickcontrols2 multimedia svg concurrent
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 CONFIG(release,debug|release):CONFIG += bump_version
-CONFIG += c++17
 CONFIG += resources_big
 CONFIG(release,debug|release):CONFIG += qtquickcompiler # Qt Quick compiler
 CONFIG(debug,debug|release):CONFIG += qml_debug  # Add qml_debug
@@ -32,6 +30,7 @@ HEADERS += \
         src/cell_item.h \
         src/datamanager.h \
         src/hal.h  \
+        src/imagegenerator.h \
         src/imageprovider.h \
         src/palette.h
 
@@ -39,6 +38,7 @@ SOURCES += \
             src/boardgenerator.cpp \
             src/boardmodel.cpp \
             src/datamanager.cpp \
+            src/imagegenerator.cpp \
             src/imageprovider.cpp \
             src/main.cpp \
             src/hal.cpp  \
@@ -112,6 +112,12 @@ DISTFILES += \
     res/fonts/LICENSE \
     res/fonts/LICENSE.txt \
     version.txt
+
+# Force C++17 if available
+contains(QT_CONFIG, c++1z): CONFIG += c++1z
+# Enable CCache
+load(ccache)
+
 
 message( Config: $$CONFIG )
 message( Libs: $$LIBS )
