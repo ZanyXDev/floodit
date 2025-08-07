@@ -194,43 +194,7 @@ QString ImageProvider::getImageFindKey(const QString &id, bool &isPicture, bool 
 
 void ImageProvider::createGameBoardImage(const QPair<int, int>& params, bool lightmode, QImage *destImage)
 {
-    //qDebug() << Q_FUNC_INFO << "params:"<<params;
-    if ( destImage->isNull() ) {
-        qDebug() << "Error: destImage isNull";
-        return;
-    }
-    // Создание новой палитры
-    auto m_pallete = std::make_unique<Palette>();
-    m_pallete->setMaxColors(params.second);
-    m_pallete->setLightMode(lightmode);
-
-    QStringList colors =m_pallete->colors();
-    QVector<QPixmap> coloredSquares;  // use array in the color
-
-    QPainter painter;
-    int cellSize = destImage->height() / params.first;
-    for (const auto& color : colors) {
-        QPixmap pixmap(cellSize, cellSize);
-        pixmap.fill(Qt::transparent); // прозрачный фон
-
-        painter.begin(&pixmap);
-        painter.fillRect(m_bordersize,m_bordersize, cellSize-(2*m_bordersize), cellSize-(2*m_bordersize), color);
-        painter.end();
-
-        coloredSquares.append(pixmap);
-    }
-    // draw game board
-    destImage->fill(Qt::transparent); // прозрачный фон
-
-    painter.begin(destImage);
-
-    for (int x=0;x<params.first;++x){
-        for (int y=0;y<params.first;++y){
-            int index = QRandomGenerator::global()->bounded(colors.count());
-            painter.drawPixmap(x * cellSize, y * cellSize, coloredSquares[index]);
-        }
-    }
-    painter.end();
+   /// Move to ImageGenerator::createGameBoardImage(...)
 
 }
 

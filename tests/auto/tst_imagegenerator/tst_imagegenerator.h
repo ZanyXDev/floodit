@@ -23,6 +23,8 @@ private slots:
     void cleanup(){};
     // вызывается после последней тестовой функции
     void cleanupTestCase();
+    void testcreateGameBoardImage();
+    void testcreateGameBoardImage_data();
 private:
     ImageGenerator *m_imageGenerator;
 };

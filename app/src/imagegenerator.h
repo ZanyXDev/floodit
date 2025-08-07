@@ -7,6 +7,8 @@ class ImageGenerator : public QObject
     Q_OBJECT
 public:
     explicit ImageGenerator(QObject *parent = nullptr);
-
-signals:
+public slots:
+    void createGameBoardImage(const QPair<int, int>& params, bool lightmode, QImage *destImage,bool &ok);
+private:
+    static const int BORDER_SIZE = 8;
 };
