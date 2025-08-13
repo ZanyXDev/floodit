@@ -25,16 +25,13 @@ void TestImageGenerator::testcreateGameBoardImage()
     QFETCH(int,colors);
     QFETCH(bool,lightmode);
     QFETCH(int,imageSize);
-    QFETCH(bool,isOK);
 
-    bool test_isOK;
     QImage *image = new QImage( imageSize, imageSize, QImage::Format_ARGB32) ;
     QVERIFY2(!image->isNull(),"Image not created!");
 
     m_imageGenerator->createGameBoardImage(qMakePair(cells, colors),
-                                           lightmode,image,test_isOK);
+                                           lightmode,image);
 
-    QCOMPARE(test_isOK,isOK);
     QCOMPARE(image->width(), imageSize); // Verify image width
     QCOMPARE(image->height(), imageSize); // Verify image height
 
