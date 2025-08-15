@@ -32,7 +32,8 @@ HEADERS += \
         src/hal.h  \
         src/imagegenerator.h \
         src/imageprovider.h \
-        src/palette.h
+        src/palette.h \
+	src/validator.h
 
 SOURCES += \
             src/boardgenerator.cpp \
@@ -42,7 +43,8 @@ SOURCES += \
             src/imageprovider.cpp \
             src/main.cpp \
             src/hal.cpp  \
-            src/palette.cpp
+            src/palette.cpp \
+	    src/validator.cpp	
 
 RESOURCES += \
         images.qrc \
